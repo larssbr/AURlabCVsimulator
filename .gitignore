@@ -1,0 +1,21 @@
+# Created by .ignore support plugin (hsz.mobi)
+### Example user template template
+### Example user template
+
+# IntelliJ project files
+.idea
+*.iml
+out
+gen
+
+# folders
+disparityImagesSaved
+images close to transponder
+images_L&R_avoided obstacle first try
+savedImages
+simulationImages1
+model
+
+# scripts
+colorMethods.py
+raptors.png
