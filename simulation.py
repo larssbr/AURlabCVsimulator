@@ -635,6 +635,29 @@ class ObstacleAvoidance:
 def saveImage(image_name_str, image):
     cv2.imwrite(image_name_str, image)
 
+#### tunner gui here #######
+
+# tuning parameters
+##############################
+# trackBarWindowName = 'image'
+# cv2.namedWindow(trackBarWindowName)  # name of window to TUNE
+
+# create trackbars for color change
+# cv2.createTrackbar('R',trackBarWindowName,0,255,nothing)
+# cv2.createTrackbar('G',trackBarWindowName,0,255,nothing)
+# cv2.createTrackbar('B',trackBarWindowName,0,255,nothing)
+# cv2.createTrackbar('radiusTresh', trackBarWindowName, 0, 100, nothing)
+
+# radiusTresh = cv2.getTrackbarPos('radiusTresh', trackBarWindowName)
+
+# create switch for ON/OFF functionality
+# switch = '0 : OFF \n1 : ON'
+# cv2.createTrackbar(switch, trackBarWindowName, 0, 1, nothing)
+
+
+
+
+
 ########
 # MAIN #
 def main():
@@ -645,6 +668,7 @@ def main():
     folderName_saveImagesSuper = "superpixelImagesSaved"
     folderName_saveImages = "disparityImagesSaved"
     pairNumberSuper = 0
+    radiusTresh = 50
     ##### New method here that load all the images in a folder and
 
     #dirPath = r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulation\simulationImages1"
@@ -686,22 +710,7 @@ def main():
     # Todo: be able to set this value from GUI level
     object_real_world_mm = 500  # 1000mm = 1 meter to calculate distance to a known object.
 
-    # tuning parameters
-    ##############################
-    trackBarWindowName = 'image'
-    cv2.namedWindow(trackBarWindowName)  # name of window to TUNE
 
-    # create trackbars for color change
-    # cv2.createTrackbar('R',trackBarWindowName,0,255,nothing)
-    # cv2.createTrackbar('G',trackBarWindowName,0,255,nothing)
-    # cv2.createTrackbar('B',trackBarWindowName,0,255,nothing)
-    cv2.createTrackbar('radiusTresh', trackBarWindowName, 0, 100, nothing)
-
-    # radiusTresh = cv2.getTrackbarPos('radiusTresh', trackBarWindowName)
-
-    # create switch for ON/OFF functionality
-    switch = '0 : OFF \n1 : ON'
-    cv2.createTrackbar(switch, trackBarWindowName, 0, 1, nothing)
 
     ##################################
     # load superpixel model
@@ -757,7 +766,6 @@ def main():
             # 2 use model to predict a new image
             # test the prediction of the model
             # image = cv2.imread("tokt1_R_267.jpg")
-            radiusTresh = 40
             print "run predictions"
 
             predictionClass = predictionTool(frame_left, model, radiusTresh, isObstacleInfront_based_on_radius)
@@ -803,7 +811,7 @@ def main():
         distance_mm = centroidClass.calcDistanceToKnownObject(object_real_world_mm)
 
        # update radiusTresh with tuner
-        radiusTresh = cv2.getTrackbarPos('radiusTresh', trackBarWindowName)
+        #radiusTresh = cv2.getTrackbarPos('radiusTresh', trackBarWindowName)
         ####### make image that buffers "old" centerpoints, and calculate center of the biggest centroid -- hopefully that is the biggest object
         try:
             imgStaaker, center, pts_que_center_List, pts_que_radius_List = centroidClass.findBiggestObject(
