@@ -13,7 +13,6 @@ import datetime # to print the time to the textfile
 from importDataset import Images  # Import the functions made in importDataset
 
 from imageTools import centroidTools
-from imageTools import messageTools
 from imageTools import drawTools
 
 # import the classes to do the superpixelMethod
@@ -52,7 +51,6 @@ def deg2rad(degrees):
     radians = pi * degrees / 180
     return radians
 
-
 class RecordImages():
     # pairNumber = pairNumber + 1
     def __init__(self, imgLeft, imgRight, img_DISPARITY, img_depthMap, pairNumber, folderName_saveImages, toktName):
@@ -78,7 +76,7 @@ class RecordImages():
 class TalkUDP:
     # Comunication methods
 
-    def __init__(self, MESSAGE):
+    def __init__(self, MESSAGE) :#, disparity_visual):
         #self.MESSAGE = ObstacleAvoidance.getMessage()
         self.MESSAGE = MESSAGE
 
@@ -105,8 +103,7 @@ class TalkUDP:
             pass
 
 
-    #########################################################
-    def process(self):
+    def statusObjectInfront(self):
         ################################# UDP #########################################
         # Compare the 3 parts, (Left, Center, Right) with each other to find in what area the object is.
         # returnValue = compare3windows(depthMap, somthing )
@@ -114,7 +111,7 @@ class TalkUDP:
         ####
         directionMessage = "status : "
         #####
-        if self.isObsticleInFront(disparity_visual,
+        if self.isObsticleInFront(self.disparity_visual,
                                   self.isObsticleInFrontTreshValue):  # if the treshold says there is somthing infront then change directions
             # directionMessage = obstacleAvoidanceDirection(disparity_visual)
 
@@ -125,128 +122,7 @@ class TalkUDP:
             directionMessage = directionMessage + str(1) + " "
 
         print "directionMessage"
-        print directionMessage
-
-        # Send position of dangerous objects. To avoid theese positions.
-        # this is for the average position of alle the picels the disparity captures.
-        Xpos = proc.findXposMessage(objectAVGCenter)
-        Ypos = proc.findYposMessage(objectAVGCenter)
-        print "Xpos"
-        print Xpos
-        # XposMessage = directionMessage + ' Xpos :'+ str(Xpos) +' Ypos :' + str(Ypos)
-        #############
-        centerPosMessage = 'Xpos : ' + str(Xpos) + '  Ypos : ' + str(Ypos)
-        Message = directionMessage + centerPosMessage
-        sendUDPmessage(Message)
-        #########
-
-        XposCenterBiggestObject = proc.findXposMessage(center)
-        YposCenterBiggestObject = proc.findYposMessage(center)
-        print "XposCenterBiggestObject"
-        print XposCenterBiggestObject
-        # XposCenterBiggestObjectMessage = 'XposCenterBiggestObject :'+ str(XposCenterBiggestObject) +'   YposCenterBiggestObject :' + str(YposCenterBiggestObject)
-
-        # centerPosMessage = 'Xpos : '+ str(XposCenterBiggestObject) +'  Ypos : ' + str(YposCenterBiggestObject)
-        # Message = directionMessage + centerPosMessage
-        # sendUDPmessage(Message)
-        ####
-
-        # Distances
-        print "distance_mm"
-        print distance_mm
-
-        if Xpos > 0:
-            print "turn right"
-            Xpath = 1100
-            print Xpath
-        else:
-            print "turn left"
-            Xpath = 100
-            print Xpath
-
-        CORD = (Xpath, Ypos)
-
-        imgStaaker = proc.drawPath(Xpath, Ypos, imgStaaker)
-
-        ############## save the images that has been used to create disparity######################
-        '''
-        pairNumber = pairNumber + 1
-        imgNameString_L = folderName_saveImages + "/" + toktName + "_L_" + str(pairNumber) + ".jpg"
-        imgNameString_R = folderName_saveImages + "/" + toktName + "_R_" + str(pairNumber) + ".jpg"
-
-        imgNameString_DISTANCE = folderName_saveImages + "/" + toktName + "_Depth_map_" + str(
-            pairNumber) + ".jpg"
-
-        imgNameString_DISPARITY = folderName_saveImages + "/" + toktName + "_Disp_map_" + str(
-            pairNumber) + ".jpg"
-
-        # writing the images to disk
-        cv2.imwrite(imgNameString_L, self.imgLeft)
-        cv2.imwrite(imgNameString_R, self.imgRight)
-        cv2.imwrite(imgNameString_DISTANCE, Depth_map)
-        cv2.imwrite(imgNameString_DISPARITY, disparity_visual)
-        '''
-        ############### DISPLAY IMAGES HERE TO the USER ############################
-
-        # if you want to se left and right image
-        # dispalyToUser(imgLeft,imgRight)
-
-        # if you want to see disparity image
-
-
-        # if you want to see adjusted disparity image
-
-        # if you want to see the drawing on top of objects
-        # cv2.imshow("image after finding minimum bounding rectangle of object", imageDraw )
-
-
-        CORD = (Xpath, Ypos)
-        print  "path direction in pixel values" + str(CORD)
-
-        imgStaaker = proc.drawPath(Xpath, Ypos, imgStaaker)
-
-        # if you want to view the center of object
-        # cv2.imshow(trackBarWindowName, imgStaaker)
-        # cv2.waitKey(0)
-
-        # if display disparity_visual_adjusted
-        # cv2.imshow("disparity_visual_adjusted", disparity_visual_adjusted)
-
-        # if display depth map
-        # cv2.imshow("Depth_map", Depth_map)
-
-
-        # cv2.imshow("image imgGrowing", imgGrowing )
-        # cv2.imshow('center object', disparity_visual)
-
-
-        #######################################################################################
-
-        # print "creating point cloud"
-        # point_cloud(disparity_visual, imgLeft, focal_length)
-        # print "saving pointCloud"
-
-        # with open("set.ply", 'w') as f:
-        #   f.write(ply_string)
-
-
-
-        '''
-        if (elapsed_time > plyTime):
-            print "creating point cloud"
-            point_cloud(disparity_visual, imgLeft, focal_length)
-            # extend time
-            plyTime = (time.time() - start_time) + 4 #  elapsed_time = 2 seconds
-
-        # TODO save pointclouds at an acaptable timefrequency
-        elapsed_time = time.time() - start_time
-        '''
-
-        # cv2.imshow("centroid_img", centroid_img)
-
-        ################## Return variables here ##############
-        return CORD
-        ##################### END PROGRAM CODE ############################################
+        return directionMessage
 
 class DisparityImage:
     # This class calculates the disparity map from a left and right image
@@ -275,7 +151,7 @@ class DisparityImage:
         self.folderName_saveImages = "savedImages"
         self.toktName = "tokt1"
         #self.object_real_world_mm = 500  # 1000mm = 1 meter to calculate distance to a known object.
-        self.isObsticleInFrontTreshValue = 1.7
+        #self.isObsticleInFrontTreshValue = 1.7
 
         # self.loadCameraParameters()
 
@@ -478,35 +354,65 @@ class DisparityImage:
             x2 = width - margin
             disparity_visual = disparity_visual[y1:y2, x1:x2]
 
-            return [disparity_visual, self.isObsticleInFrontTreshValue]
-
+            return disparity_visual #, self.isObsticleInFrontTreshValue]
 
 class ObstacleAvoidance:
 
     def __init__(self, disparity_visual, isObsticleInFrontTreshValue, objectAVGCenter, center):
-        #self.logger = logging.getLogger()
-        #self.imageList = []
-        #self.infolist = None
-        #self.image_width = 100
-        #self.imageHeight = 100
-        #self.filenames = []
-        self.MESSAGE = None
-        self.directionMessage = None
+    #def __init__(self, MESSAGE, objectCenter):
         self.disparity_visual = disparity_visual
         self.isObsticleInFrontTreshValue = isObsticleInFrontTreshValue
         self.objectAVGCenter = objectAVGCenter
+        self.cx, self.cy = self.objectAVGCenter
         self.center = center
+
+        # get the dimensions of the image
+        self.width, self.height = disparity_visual.shape[:2][::-1]
+        self.middleX, self.middleY = (self.width/2), (self.height/2)
+
+        #self.MESSAGE = None
+        self.directionMessage = None
 
         # Send position of dangerous objects. To avoid theese positions.
         # this is for the average position of alle the picels the disparity captures.
-        self.Xpos = proc.findXposMessage(self.objectAVGCenter)
-        self.Ypos = proc.findYposMessage(self.objectAVGCenter)
+        self.Xpos = self.findXposMessage()
+        self.Ypos = self.findYposMessage()
 
-    def percentageBlack(self, imgROI):
-        width, height = imgROI.shape[:2][::-1]
-        totalNumberOfPixels = width * height
-        ZeroPixels = totalNumberOfPixels - cv2.countNonZero(imgROI)
-        return ZeroPixels
+        self.CORD = self.calcCORD()
+
+        self.MESSAGE = self.createMESSAGE()
+
+        # self.MESSAGE = ObstacleAvoidance.getMessage()
+
+    def get_centerPosMessage(self):
+        # Send position of dangerous objects. To avoid theese positions.
+        # this is for the average position of alle the pixels the disparity captures.
+        Xpos = self.findXposMessage()
+        Ypos = self.findYposMessage()
+        print "Xpos"
+        print Xpos
+        # XposMessage = directionMessage + ' Xpos :'+ str(Xpos) +' Ypos :' + str(Ypos)
+        #############
+        centerPosMessage = 'Xpos : ' + str(Xpos) + '  Ypos : ' + str(Ypos)
+        return centerPosMessage
+
+    def findXposMessage(self):
+        # make new "coordinate system"
+        if self.cx < self.middleX:
+            Xpos = - (self.middleX - self.cx)  # - 50 is a little to the left
+        else:
+            Xpos = self.cx - self.middleX
+
+        return -Xpos  # - to send the direction the rov should go, more intutive then where it should not go
+
+    def findYposMessage(self):
+        # make new "coordinate system"
+        if self.cy < self.middleY:
+            Ypos = - (self.middleY - self.cx)  # - 50 is a little to the left
+        else:
+            Ypos = self.cx - self.middleY
+
+        return -Ypos  # - to send the direction the rov should go, more intutive then where it should not go
 
     def meanPixelSUM(self, imgROI):
         '''
@@ -519,7 +425,19 @@ class ObstacleAvoidance:
 
         return meanValue[0]  # want to have the 0 array, else the data is represented liek this: (1.3585184021230532, 0.0, 0.0, 0.0)
 
+    ##### todo, dont use this anymore , move or delete it
+    def percentageBlack(self, imgROI):
+        width, height = imgROI.shape[:2][::-1]
+        totalNumberOfPixels = width * height
+        ZeroPixels = totalNumberOfPixels - cv2.countNonZero(imgROI)
+        return ZeroPixels
     def obstacleAvoidanceDirection(self, img):
+        # this method devides the image into 3 parts and chooses either
+        # Left
+        # Center
+        # Right
+        # It calcullates the meanPixelSUm of each area, and deice if the majority of the
+        # obstacle is in the Left, Center, Right part of the image.
 
         width, height = img.shape[:2][::-1]
         margin_sides = 100
@@ -557,12 +475,17 @@ class ObstacleAvoidance:
             return "RIGHT"
         else:
             return "NEED MORE TIME TO DECIDE"
+    #####
 
     def isObsticleInFront(self, img):
+        # This method takes the possible "object Image"
+        # And calculates a meanPixelSUM and if this value is over a given
+        # isObsticleInFrontTreshValue then it returns True, else False
+
         meanValue = self.meanPixelSUM(img)
         print "meanValue for disparity image"
         print meanValue
-        if meanValue < self.isObsticleInFrontTreshValue:  # 1.7:
+        if meanValue > self.isObsticleInFrontTreshValue:  # 1.7:
             return True
         else:
             return False
@@ -570,15 +493,51 @@ class ObstacleAvoidance:
     def getMessage(self):
         return self.MESSAGE
 
+    def createMESSAGE(self):
+        directionMessage = "status : "
+        #####
+        # --> tell path program
+        # 0 if there is obstacle in the image
+        # 1 if there is NO obstacle in the image
+        if self.isObsticleInFront(self.disparity_visual):  # if the treshold says there is somthing infront then change directions
+            # directionMessage = obstacleAvoidanceDirection(disparity_visual)
+            # it should change path
+            directionMessage = directionMessage + str(0) + " "
+        else:  # if nothing is in front of camera, do not interupt the path
+            # it can continue on its path
+            directionMessage = directionMessage + str(1) + " "
+
+        print "directionMessage"
+        print directionMessage
+
+        print "Xpos"
+        print self.Xpos
+        # XposMessage = directionMessage + ' Xpos :'+ str(Xpos) +' Ypos :' + str(Ypos)
+        #############
+        centerPosMessage = 'Xpos : ' + str(self.Xpos) + '  Ypos : ' + str(self.Ypos)
+        MESSAGE = directionMessage + centerPosMessage
+        return MESSAGE
+
+    def get_MESSAGE(self):
+        return self.MESSAGE
+
     def getCORD(self):
+        return self.CORD
+
+    def calcCORD(self):
+        # this method sets a cordinate for direction of the ROV
+        # if Xpos is positive, then we want to move alot to the Right in the image
+        # if Xpos is negative, then we want to move alot to the Left in the image
         if self.Xpos > 0:
             print "turn right"
-            Xpath = 1100
-            print Xpath
+            # self.Xpath = 1100
+            self.Xpath = self.middleX + (self.middleX / 2)
+            print self.Xpath
         else:
             print "turn left"
-            Xpath = 100
-            print Xpath
+            # self.Xpath = 100
+            self.Xpath = self.middleX - (self.middleX / 2)
+            print self.Xpath
 
         CORD = (self.Xpath, self.Ypos)
         return CORD
@@ -589,35 +548,13 @@ class ObstacleAvoidance:
         # returnValue = compare3windows(depthMap, somthing )
         # Image ROI
         ####
-        directionMessage = "status : "
-        #####
-        if self.isObsticleInFront(self.disparity_visual):  # if the treshold says there is somthing infront then change directions
-            # directionMessage = obstacleAvoidanceDirection(disparity_visual)
-
-            # it should change path
-            directionMessage = directionMessage + str(0) + " "
-        else:  # if nothing is in front of camera, do not interupt the path
-            # it can continue on its path
-            directionMessage = directionMessage + str(1) + " "
-
-        print "directionMessage"
-        print directionMessage
-
-
-        print "Xpos"
-        print self.Xpos
-        # XposMessage = directionMessage + ' Xpos :'+ str(Xpos) +' Ypos :' + str(Ypos)
-        #############
-        centerPosMessage = 'Xpos : ' + str(self.Xpos) + '  Ypos : ' + str(self.Ypos)
-        self.MESSAGE = directionMessage + centerPosMessage
-
         return self.MESSAGE
 
         #sendUDPmessage(Message)
         #########
 
         #XposCenterBiggestObject = proc.findXposMessage(self.center)
-        YposCenterBiggestObject = proc.findYposMessage(self.center)
+        #YposCenterBiggestObject = proc.findYposMessage(self.center)
         #print "XposCenterBiggestObject"
         #print XposCenterBiggestObject
         # XposCenterBiggestObjectMessage = 'XposCenterBiggestObject :'+ str(XposCenterBiggestObject) +'   YposCenterBiggestObject :' + str(YposCenterBiggestObject)
@@ -662,13 +599,14 @@ def saveImage(image_name_str, image):
 # MAIN #
 def main():
     # decide wich method you want to run --> 1 = disparity method, 2 = classification method
-    methodDecide = 2
+    methodDecide = 1
     isObstacleInfront_based_on_radius = False
     createdModel = False
     folderName_saveImagesSuper = "superpixelImagesSaved"
     folderName_saveImages = "disparityImagesSaved"
     pairNumberSuper = 0
     radiusTresh = 50
+    isObsticleInFrontTreshValue = 0.3 # if the value is above this. then we treat it as it is a object in front of the stereo camera
     ##### New method here that load all the images in a folder and
 
     #dirPath = r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulation\simulationImages1"
@@ -693,6 +631,7 @@ def main():
     toktName = "tokt1"
     timeTXTfileName = "timeImages_" + toktName + ".txt"
     timeTXTfile = open(timeTXTfileName, 'w')
+    MESSAGE_File = open("MESSAGE_File.txt", 'w')
     pathDirFile = open("pathDir.txt", 'w')
 
     # set up ques
@@ -745,7 +684,7 @@ def main():
             dispClass = DisparityImage(imgLeft=frame_left, imgRight=frame_right)
 
             # run the DisparityImage class process
-            [disparity_visual, isObsticleInFrontTreshValue] = dispClass.process()
+            disparity_visual = dispClass.process()
 
             disparity_visualBW = cv2.convertScaleAbs(disparity_visual)
 
@@ -791,42 +730,45 @@ def main():
         # 2 calculate centroid info from disparity image
         # used to find out of information in the image to use for the obstacle avoidance module
         # create class
-        centroidClass = centroidTools(imgBW=disparity_visual)
-
+        centroidClass = centroidTools(imgBW=disparity_visual, object_real_world_mm=object_real_world_mm)
         # calculate the centers of the small "objects"
-        centroidClass.findCentroidsCenterCords()
+        #centroidClass.findCentroidsCenterCords()
         # pixelSizeOfObject = 50
         # calculate the average center of this disparity
-        try:
+        #try:
             # objectAVGCenter = proc.getAverageCentroidPosition(centerCordinates)
-            objectAVGCenter = centroidClass.getAverageCentroidPosition()
-        except:
-            pass
+        #    objectAVGCenter = centroidClass.getAverageCentroidPosition()
+        #except:
+        #    pass
             # isObstacleInfront_based_on_radius = False
 
         centerCordinates = centroidClass.get_centerCordinates()
 
         # object_real_world_mm = 500 # 1000mm = 1 meter
         # distance_mm = proc.calcDistanceToKnownObject(self.object_real_world_mm, pixelSizeOfObject)
-        distance_mm = centroidClass.calcDistanceToKnownObject(object_real_world_mm)
+        #distance_mm = centroidClass.calcDistanceToKnownObject(object_real_world_mm)
 
        # update radiusTresh with tuner
         #radiusTresh = cv2.getTrackbarPos('radiusTresh', trackBarWindowName)
         ####### make image that buffers "old" centerpoints, and calculate center of the biggest centroid -- hopefully that is the biggest object
         try:
             imgStaaker, center, pts_que_center_List, pts_que_radius_List = centroidClass.findBiggestObject(
-            disparity_visualBW.copy(), pts_que_center, pts_que_radius, radiusTresh=radiusTresh)
+                centroidClass.get_imgBWCopy(), pts_que_center, pts_que_radius, radiusTresh=radiusTresh)
         except:
             pass
+        # load parameters
+        objectAVGCenter = centroidClass.getAverageCentroidPosition()
 
         ################################################################################
         # 3 Obstacle checking the centroid information
         CORD = None
         try:
             obstacleClass = ObstacleAvoidance(disparity_visual= disparity_visual, isObsticleInFrontTreshValue= isObsticleInFrontTreshValue, objectAVGCenter= objectAVGCenter, center= center)
-            CORD = obstacleClass.getCORD
-            # CORD = methodEN(frame_left, frame_right)
-            MESSAGE = obstacleClass.process()
+            CORD = obstacleClass.getCORD()
+
+            #MESSAGE = obstacleClass.process()
+            MESSAGE = obstacleClass.get_MESSAGE()
+            print "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
         except:
             pass
 
@@ -881,11 +823,14 @@ def main():
         #time.sleep(0.35)
         ############# writing the path direction to text file for annalysing later ##########
         if (CORD != None):
-            path_string = "path direction in pixel values" + str(CORD)
-            print "path direction in pixel values" + str(CORD)
+            path_string = "path direction in pixel values : " + str(CORD)
+            print "path direction in pixel values : " + str(CORD)
             print "saving pathDir.txt"
             # with open("pathDir.txt", 'w') as f:
             pathDirFile.write(path_string + '\n')
+
+        if (MESSAGE != None):
+            MESSAGE_File.write(MESSAGE + '\n')
 
         # write the time these images have been taken to a file
         dateTime_string = unicode(datetime.datetime.now())
@@ -898,6 +843,7 @@ def main():
     # close the .txt files that had been written to
     try:
         pathDirFile.close()
+        MESSAGE_File.close()
         timeTXTfile.close()
     except:
         pass

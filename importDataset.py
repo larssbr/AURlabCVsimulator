@@ -101,18 +101,6 @@ class Images:
 
     ######## End of sorting function
 
-
-
-
-
-
-
-
-
-
-
-
-
     def getimage_shape(self, img):
         return img.shape[1], img.shape[0]
 

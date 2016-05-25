@@ -8,21 +8,35 @@ from matplotlib import pyplot as plt
 
 class centroidTools:
 
-    def __init__(self, imgBW):
+    def __init__(self, imgBW, object_real_world_mm):
         # self.MESSAGE = ObstacleAvoidance.getMessage()
         self.imgBW = self.prepareDisparityImage_for_centroid(imgBW) # BW for black and white
-        self.centerCordinates = []
+        self.object_real_world_mm = object_real_world_mm
+
         self.objectCenter = (0,0)
 
         self.focallength_mm = (2222.72426 * 35) / 1360
         self.pxPERmm = 2222.72426 / self.focallength_mm  # pxPERmm = 38.8571428572
-
         self.pixelSizeOfObject = 50
+
+        #self.centerCordinates = []
+        self.imgBWCopy, self.centerCordinates = self.findCentroidsCenterCords()
+        try:
+            self.objectAVGCenter = self.getAverageCentroidPosition()
+        except:
+            pass
+
+        #centerCordinates = self.get_centerCordinates()
+
+        self.distance_mm = self.calcDistanceToKnownObject()
+
+    def get_imgBWCopy(self):
+        return self.imgBWCopy
 
     def findCentroidsCenterCords(self):
         imgBWCopy = self.imgBW.astype(np.uint8)
 
-       #h, w = imgBW.shape[:2]
+        #h, w = imgBW.shape[:2]
         #contours0, hierarchy = cv2.findContours( imgBW.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
         contours0, hierarchy = cv2.findContours( imgBWCopy, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
         moments = [cv2.moments(cnt) for cnt in contours0]
@@ -30,18 +44,19 @@ class centroidTools:
         # rounded the centroids to integer.
         centroids = [( int(round(m['m10']/m['m00'])), int(round(m['m01']/m['m00'])) ) for m in moments]
 
-        #centerCordinates = []
+        centerCordinates = []
 
         for ctr in centroids:
             # draw a black little empty circle in the centroid position
             centerCircle_Color = (0, 0, 0)
-            cv2.circle(self.imgBW, ctr, 4, centerCircle_Color)
-            self.centerCordinates.append(ctr)
-            #ctrTimes = 1
+            #cv2.circle(self.imgBW, ctr, 4, centerCircle_Color)
+            cv2.circle(imgBWCopy,ctr,4,centerCircle_Color)
+            centerCordinates.append(ctr)
 
-        self.centerCordinates = np.asarray(self.centerCordinates)
 
-        return self.imgBW, self.centerCordinates
+        centerCordinates = np.asarray(centerCordinates)
+
+        return imgBWCopy, centerCordinates   # self.imgBW, self.centerCordinates
 
     def get_centerCordinates(self):
         return self.centerCordinates
@@ -49,11 +64,11 @@ class centroidTools:
     def getAverageCentroidPosition(self):
         # taking the average of the centroids x and y poition to calculate and estimated  object CENTER
         # centerCordinates = centerCordinates.astype(np.int)
-        self.objectCenter = np.average(self.centerCordinates, axis=0)
+        objectCenter = np.average(self.centerCordinates, axis=0)
         # objectCenter = objectCenter.astype(np.uint8)
 
         print "objectCenter  : "
-        print self.objectCenter  # , objectCentery
+        print objectCenter  # , objectCentery
         # print objectCentery
 
         # Unpack tuple.
@@ -63,13 +78,14 @@ class centroidTools:
         print(objectCenterX)
         print(objectCenterY)
         # pack the tupple
-        self.objectCenter = (int(objectCenterX), int(objectCenterY))
+        objectCenter = (int(objectCenterX), int(objectCenterY))
 
-        return self.objectCenter
+        return objectCenter
 
-    def calcDistanceToKnownObject(self, object_real_world_mm):
+    def calcDistanceToKnownObject(self):  #object_real_world_mm):
         object_image_sensor_mm = self.pixelSizeOfObject / self.pxPERmm
-        distance_mm = (object_real_world_mm * self.focallength_mm) / object_image_sensor_mm
+        #distance_mm = (object_real_world_mm * self.focallength_mm) / object_image_sensor_mm
+        distance_mm = (self.object_real_world_mm * self.focallength_mm) / object_image_sensor_mm
         return distance_mm
 
     def prepareDisparityImage_for_centroid(self, IMGbw):
@@ -84,7 +100,6 @@ class centroidTools:
 
     # object avoidance      #################
     def findBiggestObject(self, imgBW, pts_que_center, pts_que_radius, radiusTresh=40):
-
 
         blurred = cv2.GaussianBlur(imgBW, (11, 11), 0)
         mask = blurred
@@ -136,36 +151,33 @@ class centroidTools:
 
         return imgBW, biggestObjectCenter, pts_que_center_List, pts_que_radius_List
 
-class messageTools:
-    def __init__(self, MESSAGE, objectCenter):
-        self.MESSAGE = MESSAGE
-        self.objectCenter = objectCenter
-        #self.MESSAGE = ObstacleAvoidance.getMessage()
+    def process(self):
+        #centroidClass = centroidTools(imgBW=disparity_visual)
+        # calculate the centers of the small "objects"
+        #self.imgBW, self.centerCordinates = self.findCentroidsCenterCords()
+        # pixelSizeOfObject = 50
+        # calculate the average center of this disparity
+        #try:
+            # objectAVGCenter = proc.getAverageCentroidPosition(centerCordinates)
+        #    objectAVGCenter = self.getAverageCentroidPosition()
+        #except:
+        #    pass
+            # isObstacleInfront_based_on_radius = False
 
-    def findXposMessage(self):
-        cx, cy = self.objectCenter
-        # make new "coordinate system"
-        middleX = 1360 / 2  # 680
+        #centerCordinates = self.get_centerCordinates()
 
-        if cx < middleX:
-            Xpos = - (middleX - cx)  # - 50 is a little to the left
-        else:
-            Xpos = cx - middleX
+        # object_real_world_mm = 500 # 1000mm = 1 meter
+        # distance_mm = proc.calcDistanceToKnownObject(self.object_real_world_mm, pixelSizeOfObject)
+        distance_mm = self.calcDistanceToKnownObject()
 
-        return -Xpos  # - to send the direction the rov should go, more intutive then where it should not go
-
-    def findYposMessage(self):
-        cx, cy = self.objectCenter
-        # make new "coordinate system"
-        middleY = 1024 / 2  # 512
-
-        if cy < middleY:
-            Ypos = - (middleY - cx)  # - 50 is a little to the left
-        else:
-            Ypos = cx - middleY
-
-        return -Ypos  # - to send the direction the rov should go, more intutive then where it should not go
-
+        # update radiusTresh with tuner
+        # radiusTresh = cv2.getTrackbarPos('radiusTresh', trackBarWindowName)
+        ####### make image that buffers "old" centerpoints, and calculate center of the biggest centroid -- hopefully that is the biggest object
+        try:
+            imgStaaker, center, pts_que_center_List, pts_que_radius_List = centroidClass.findBiggestObject(
+                disparity_visualBW.copy(), pts_que_center, pts_que_radius, radiusTresh=radiusTresh)
+        except:
+            pass
 
 class drawTools:
     def __init__(self, image, centerCordinates, objectAVGCenter):
@@ -302,34 +314,33 @@ class drawTools:
 ##############################################################################################################################################################
 ##### helper methods
 
-##
-# Converts an image into a binary image at the specified threshold.
-# All pixels with a value <= threshold become 0 --> BLACK, while
-# pixels > threshold become 1 --> WHITE
 def use_threshold(image, threshold = 100):
+    # Converts an image into a binary image at the specified threshold.
+    # All pixels with a value <= threshold become 0 --> BLACK, while
+    # pixels > threshold become 1 --> WHITE
     (thresh, im_bw) = cv2.threshold(image, threshold, 255, cv2.THRESH_BINARY)
     return (thresh, im_bw)
 
-##
-# Finds the outer contours of a binary image and returns a shape-approximation
-# of them. Because we are only finding the outer contours, there is no object
-# hierarchy returned.
-##
 def find_contours(image):
+    ##
+    # Finds the outer contours of a binary image and returns a shape-approximation
+    # of them. Because we are only finding the outer contours, there is no object
+    # hierarchy returned.
+    ##
     (contours, hierarchy) = cv2.findContours(image, mode=cv2.cv.CV_RETR_EXTERNAL, method=cv2.cv.CV_CHAIN_APPROX_SIMPLE)
     return contours
 
-##
-# Finds the centroids of a list of contours returned by
-# the find_contours (or cv2.findContours) function.
-# If any moment of the contour is 0, the centroid is not computed. Therefore
-# the number of centroids returned by this function may be smaller than
-# the number of contours passed in.
-#
-# The return value from this function is a list of (x,y) pairs, where each
-# (x,y) pair denotes the center of a contour.
-##
 def find_centers(contours):
+    ##
+    # Finds the centroids of a list of contours returned by
+    # the find_contours (or cv2.findContours) function.
+    # If any moment of the contour is 0, the centroid is not computed. Therefore
+    # the number of centroids returned by this function may be smaller than
+    # the number of contours passed in.
+    #
+    # The return value from this function is a list of (x,y) pairs, where each
+    # (x,y) pair denotes the center of a contour.
+    ##
     centers = []
     for contour in contours:
         moments = cv2.moments(contour, True)
@@ -347,12 +358,12 @@ def find_centers(contours):
         centers.append(center)
     return centers
 
-##
-# Draws circles on an image from a list of (x,y) tuples
-# (like those returned from find_centers()). Circles are
-# drawn with a radius of 20 px and a line width of 2 px.
-##
 def draw_centers(centers, image):
+    ##
+    # Draws circles on an image from a list of (x,y) tuples
+    # (like those returned from find_centers()). Circles are
+    # drawn with a radius of 20 px and a line width of 2 px.
+    ##
     for center in centers:
         cv2.circle(image, tuple(center), 20, cv2.cv.RGB(0,255,255), 2)
 
@@ -425,53 +436,6 @@ def drawPath(Xpath,Ypos, image):
 
     return image
 
-def drawStuff(centerCordinates, image):
-    # http://opencvpython.blogspot.no/2012/06/contours-2-brotherhood.html
-    # http://docs.opencv.org/3.1.0/dd/d49/tutorial_py_contour_features.html#gsc.tab=0pyth
-   ############## creating a minimum rectangle around the object ######################
-    try:
-        rect = cv2.minAreaRect(points=centerCordinates)
-        box = cv2.cv.BoxPoints(rect)
-        box = np.int0(box)
-        cv2.drawContours(image,[box],0,(255,255,255),2)
-    except:
-        pass
-    ########### circle around object #######3
-
-    try:
-        (x, y),radius = cv2.minEnclosingCircle(centerCordinates)
-        center = (int(x),int(y))
-        radius = int(radius)
-        cv2.circle(image, center, radius, (255,255,255),2)
-    except:
-        pass
-
-
-    ########### finding a elipse ##############
-    #if len(centerCordinates) > 5:  # need more than points than 5 to be able to run  cv2.fitEllipse
-    try:
-        ellipse = cv2.fitEllipse(centerCordinates)
-        cv2.ellipse(image,ellipse,(255,255,255),2)
-    except:
-        pass
-
-    ##### fitting a line ###########
-
-    try:
-        rows,cols = image.shape[:2]
-        [vx,vy,x,y] = cv2.fitLine(points=centerCordinates, distType=cv2.cv.CV_DIST_L2, param =0, reps=0.01, aeps=0.01)
-        lefty = int((-x*vy/vx) + y)
-        righty = int(((cols-x)*vy/vx)+y)
-        cv2.line(image,(cols-1,righty),(0, lefty),(255,255,255),2)
-    except:
-        pass
-
-    try:
-        pixelSizeOfObject = radius  # an okay estimate for testing
-    except:
-        pixelSizeOfObject = 50
-
-    return image, pixelSizeOfObject
 
 def calcDistanceToKnownObject(object_real_world_mm, pixelSizeOfObject):
 
@@ -482,29 +446,6 @@ def calcDistanceToKnownObject(object_real_world_mm, pixelSizeOfObject):
     distance_mm = (object_real_world_mm * focallength_mm) / object_image_sensor_mm
     return distance_mm
 
-def findXposMessage(objectCenter):
-    cx, cy = objectCenter
-    # make new "coordinate system"
-    middleX = 1360/2 # 680
-
-    if cx < middleX :
-        Xpos = - (middleX - cx) # - 50 is a little to the left
-    else:
-        Xpos = cx - middleX
-
-    return -Xpos   # - to send the direction the rov should go, more intutive then where it should not go
-
-def findYposMessage(objectCenter):
-    cx, cy = objectCenter
-    # make new "coordinate system"
-    middleY = 1024/2 # 512
-
-    if cy < middleY :
-        Ypos = - (middleY - cx) # - 50 is a little to the left
-    else:
-        Ypos = cx - middleY
-
-    return -Ypos   # - to send the direction the rov should go, more intutive then where it should not go
 
 # Not used
 def findCentroifOfObject(img):
@@ -584,12 +525,11 @@ def objectTreshold(leftImg, rightImage):
     return matchesINT #acceptedINT
 
 def prepareDisparityImage_for_centroid(IMGbw):
-    #IMGbw = cv2.erode(IMGbw, np.ones((4, 4)))
+    # This method dilates the points in the black and white image.
+    # This is to connect more of the dots, so we get bigger countours.
 
     # DILATE white points...
     IMGbw = cv2.dilate(IMGbw, np.ones((5, 5)))
     IMGbw = cv2.dilate(IMGbw, np.ones((5, 5)))
-    #IMGbw = cv2.erode(IMGbw, np.ones((4, 4)))
-    #IMGbw = cv2.dilate(IMGbw, np.ones((5, 5)))
     return IMGbw
 

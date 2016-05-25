@@ -19,3 +19,7 @@ model
 # scripts
 colorMethods.py
 raptors.png
+
+# logfiles
+timeImages_tokt1.txt
+pathDir.txt
