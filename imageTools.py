@@ -19,9 +19,10 @@ class centroidTools:
         self.pxPERmm = 2222.72426 / self.focallength_mm  # pxPERmm = 38.8571428572
         self.pixelSizeOfObject = 50
 
-        #self.centerCordinates = []
+        # calculate the centers of the small "objects"
         self.imgBWCopy, self.centerCordinates = self.findCentroidsCenterCords()
         try:
+            # calculate the average center of this disparity
             self.objectAVGCenter = self.getAverageCentroidPosition()
         except:
             pass
@@ -33,11 +34,11 @@ class centroidTools:
     def get_imgBWCopy(self):
         return self.imgBWCopy
 
+
     def findCentroidsCenterCords(self):
+        # calculate the centers of the small "objects"
         imgBWCopy = self.imgBW.astype(np.uint8)
 
-        #h, w = imgBW.shape[:2]
-        #contours0, hierarchy = cv2.findContours( imgBW.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
         contours0, hierarchy = cv2.findContours( imgBWCopy, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
         moments = [cv2.moments(cnt) for cnt in contours0]
 

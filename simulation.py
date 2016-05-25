@@ -485,16 +485,17 @@ class ObstacleAvoidance:
         meanValue = self.meanPixelSUM(img)
         print "meanValue for disparity image"
         print meanValue
+        # if the meanValue is above a treshold for to "small areas of pixels in the image"
+        # in this case 0.3
         if meanValue > self.isObsticleInFrontTreshValue:  # 1.7:
             return True
         else:
             return False
 
-    def getMessage(self):
-        return self.MESSAGE
 
     def createMESSAGE(self):
-        directionMessage = "status : "
+        #directionMessage = "status : "
+        directionMessage = "status : , "
         #####
         # --> tell path program
         # 0 if there is obstacle in the image
@@ -514,14 +515,15 @@ class ObstacleAvoidance:
         print self.Xpos
         # XposMessage = directionMessage + ' Xpos :'+ str(Xpos) +' Ypos :' + str(Ypos)
         #############
-        centerPosMessage = 'Xpos : ' + str(self.Xpos) + '  Ypos : ' + str(self.Ypos)
+        #centerPosMessage = 'Xpos : ' + str(self.Xpos) + '  Ypos : ' + str(self.Ypos)
+        centerPosMessage = ' ,Xpos : ,' + str(self.Xpos) + ',  Ypos : , ' + str(self.Ypos)
         MESSAGE = directionMessage + centerPosMessage
         return MESSAGE
 
     def get_MESSAGE(self):
         return self.MESSAGE
 
-    def getCORD(self):
+    def get_CORD(self):
         return self.CORD
 
     def calcCORD(self):
@@ -541,33 +543,6 @@ class ObstacleAvoidance:
 
         CORD = (self.Xpath, self.Ypos)
         return CORD
-
-    def process(self):
-        ################################# UDP #########################################
-        # Compare the 3 parts, (Left, Center, Right) with each other to find in what area the object is.
-        # returnValue = compare3windows(depthMap, somthing )
-        # Image ROI
-        ####
-        return self.MESSAGE
-
-        #sendUDPmessage(Message)
-        #########
-
-        #XposCenterBiggestObject = proc.findXposMessage(self.center)
-        #YposCenterBiggestObject = proc.findYposMessage(self.center)
-        #print "XposCenterBiggestObject"
-        #print XposCenterBiggestObject
-        # XposCenterBiggestObjectMessage = 'XposCenterBiggestObject :'+ str(XposCenterBiggestObject) +'   YposCenterBiggestObject :' + str(YposCenterBiggestObject)
-
-
-        # centerPosMessage = 'Xpos : '+ str(XposCenterBiggestObject) +'  Ypos : ' + str(YposCenterBiggestObject)
-        # Message = directionMessage + centerPosMessage
-        # sendUDPmessage(Message)
-        ####
-
-        # Distances
-        #print "distance_mm"
-        #print self.distance_mm
 
 def saveImage(image_name_str, image):
     cv2.imwrite(image_name_str, image)
@@ -606,15 +581,17 @@ def main():
     folderName_saveImages = "disparityImagesSaved"
     pairNumberSuper = 0
     radiusTresh = 50
-    isObsticleInFrontTreshValue = 0.3 # if the value is above this. then we treat it as it is a object in front of the stereo camera
+    isObsticleInFrontTreshValue = 0.345 # if the value is above this. then we treat it as it is a object in front of the stereo camera
     ##### New method here that load all the images in a folder and
+    # isObsticleInFrontTreshValue = 1.7 under the sea trials. but i think i changed some code. Now it is working great again with 0.3
 
     #dirPath = r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulation\simulationImages1"
-    #dirPathLeft = r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulationClean\images close to transponder\Left"
 
-    #dirPathRight = r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulationClean\images close to transponder\Right"
-    dirPathLeft = r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulationClean\repeatExperiment\Left"
-    dirPathRight = r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulationClean\repeatExperiment\Right"
+    dirPathLeft = r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulationClean\images close to transponder\Left"
+    dirPathRight = r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulationClean\images close to transponder\Right"
+
+    #dirPathLeft = r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulationClean\repeatExperiment\Left"
+    #dirPathRight = r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulationClean\repeatExperiment\Right"
 
     imgsLeft = Images(dirPathLeft)
     imgsRight = Images(dirPathRight)
@@ -731,16 +708,6 @@ def main():
         # used to find out of information in the image to use for the obstacle avoidance module
         # create class
         centroidClass = centroidTools(imgBW=disparity_visual, object_real_world_mm=object_real_world_mm)
-        # calculate the centers of the small "objects"
-        #centroidClass.findCentroidsCenterCords()
-        # pixelSizeOfObject = 50
-        # calculate the average center of this disparity
-        #try:
-            # objectAVGCenter = proc.getAverageCentroidPosition(centerCordinates)
-        #    objectAVGCenter = centroidClass.getAverageCentroidPosition()
-        #except:
-        #    pass
-            # isObstacleInfront_based_on_radius = False
 
         centerCordinates = centroidClass.get_centerCordinates()
 
@@ -748,23 +715,22 @@ def main():
         # distance_mm = proc.calcDistanceToKnownObject(self.object_real_world_mm, pixelSizeOfObject)
         #distance_mm = centroidClass.calcDistanceToKnownObject(object_real_world_mm)
 
-       # update radiusTresh with tuner
-        #radiusTresh = cv2.getTrackbarPos('radiusTresh', trackBarWindowName)
         ####### make image that buffers "old" centerpoints, and calculate center of the biggest centroid -- hopefully that is the biggest object
         try:
             imgStaaker, center, pts_que_center_List, pts_que_radius_List = centroidClass.findBiggestObject(
                 centroidClass.get_imgBWCopy(), pts_que_center, pts_que_radius, radiusTresh=radiusTresh)
         except:
             pass
-        # load parameters
+        # get parameter from class
         objectAVGCenter = centroidClass.getAverageCentroidPosition()
 
         ################################################################################
         # 3 Obstacle checking the centroid information
         CORD = None
+        MESSAGE=None
         try:
             obstacleClass = ObstacleAvoidance(disparity_visual= disparity_visual, isObsticleInFrontTreshValue= isObsticleInFrontTreshValue, objectAVGCenter= objectAVGCenter, center= center)
-            CORD = obstacleClass.getCORD()
+            CORD = obstacleClass.get_CORD()
 
             #MESSAGE = obstacleClass.process()
             MESSAGE = obstacleClass.get_MESSAGE()
