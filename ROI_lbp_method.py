@@ -22,7 +22,6 @@ from imutils import paths
 # to save and load, the model that is created from the classification
 from sklearn.externals import joblib
 
-
 # import the necessary packages
 from skimage import feature
 import numpy as np
@@ -204,12 +203,15 @@ class analyseROITools:
 		return data, labels
 
 class predictionTool:
+	# this class will predict on ROI and not on segments
+	# the image is divided into 100 ROI. and each ROI will be predicted before we mask the image
+
 
 	def __init__(self, image, model, radiusTresh, isObstacleInfront_based_on_radius):
 
 		self.image = self.resizeImage(image)
 		#self.segments = self.get_segments(image)
-		self.segments = slic(img_as_float(self.image), n_segments=100, sigma=5)
+		#self.segments = slic(img_as_float(self.image), n_segments=100, sigma=5)
 		#self.segments = felzenszwalb(img_as_float(self.image), scale=3.0, sigma=0.95, min_size=5)
 
 		#self.image = image
@@ -282,6 +284,18 @@ class predictionTool:
 
 		return imageROIList
 
+	def make100ROI(self):
+
+		list = [0:1:100]
+
+
+		for ctr in list:
+			# 2 compute bounding box of countour
+			(x, y, w, h) = cv2.boundingRect(ctr)
+
+			# 3 extract the rectangular ROI
+			imageROI = image[y:y + h, x:x + w].copy()
+
 	def extractROIofSegmentandCenterList(self, image, segments):
 		#desc = LocalBinaryPatterns(24, 8)
 		centerList = []
@@ -293,6 +307,7 @@ class predictionTool:
 
 
 		# loop over the unique segment values
+		# this method will loop over the ROI
 		for (i, segVal) in enumerate(np.unique(segments)):
 			# construct a mask for the segment
 			print "[x] inspecting segment %d" % (i)

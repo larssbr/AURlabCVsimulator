@@ -20,6 +20,8 @@ from slicSuperpixel_lbp_method import LocalBinaryPatterns
 from slicSuperpixel_lbp_method import modelTools
 from slicSuperpixel_lbp_method import predictionTool
 
+from slicSuperpixel_Haralick_method import modelToolsH
+from slicSuperpixel_Haralick_method import predictionToolH
 
 from simple_lbp_model import simpleModelTools
 from simple_lbp_model import simpleAnalyseImageTools
@@ -594,7 +596,7 @@ def main():
 
     #dirPath = r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulation\simulationImages1"
 
-    #dirPathLeft = r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulationClean\images close to transponder\Left"
+    #PathLeft = r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulationClean\images close to transponder\Left"
     #dirPathRight = r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulationClean\images close to transponder\Right"
 
     dirPathLeft = r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulationClean\repeatExperiment\Left"
@@ -644,10 +646,11 @@ def main():
     # Create segmented model
     imageOcean = cv2.imread("tokt1_R_1037.jpg")
     imageOther = cv2.imread("raptors.png")
-    modelClass = modelTools(createdModel, imageOcean, imageOther)
+    #modelClass = modelTools(createdModel, imageOcean, imageOther)
+    #model = modelClass.get_model()
+
+    modelClass = modelToolsH(createdModel, imageOcean, imageOther)
     model = modelClass.get_model()
-
-
 
     # create model of the whole image
     #imageOcean = cv2.imread("tokt1_R_1037.jpg")
@@ -692,8 +695,8 @@ def main():
             # image = cv2.imread("tokt1_R_267.jpg")
             print "run predictions"
 
-            predictionClass = predictionTool(frame_left, model, radiusTresh, isObstacleInfront_based_on_radius)
-
+            #predictionClass = predictionTool(frame_left, model, radiusTresh, isObstacleInfront_based_on_radius)
+            predictionClass = predictionToolH(frame_left, model, radiusTresh, isObstacleInfront_based_on_radius)
 
             #predictionClass.show_maskedImage()
             disparity_visual = predictionClass.get_maskedImage()

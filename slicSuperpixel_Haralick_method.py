@@ -22,37 +22,29 @@ from imutils import paths
 # to save and load, the model that is created from the classification
 from sklearn.externals import joblib
 
+# for the Haralick descriptor
+import mahotas
 
 # import the necessary packages
 from skimage import feature
 import numpy as np
 
-class LocalBinaryPatterns:
-	# this class is from: http://www.pyimagesearch.com/2015/12/07/local-binary-patterns-with-python-opencv/
-	def __init__(self, numPoints, radius):
-		# store the number of points and radius
-		self.numPoints = numPoints
-		self.radius = radius
+
+class Haralick:
+	# this mehtod is a Harlick discriptor
+	# it uses the mahotas library
 
 	def describe(self, image, eps=1e-7):
-		# compute the Local Binary Pattern representation
-		# of the image, and then use the LBP representation
-		# to build the histogram of patterns
-		lbp = feature.local_binary_pattern(image, self.numPoints, self.radius, method= "uniform" ) # method= "ror") #method="var")# method="nri_uniform")  # method="uniform")
-		# using unifrom binary pattern (watch this to understand better): https://www.youtube.com/watch?annotation_id=annotation_98709127&feature=iv&src_vid=wpAwdsubl1w&v=v-gkPTvdgYo
-		# different merhod= --> http://scikit-image.org/docs/dev/api/skimage.feature.html?highlight=local_binary_pattern#skimage.feature.local_binary_pattern
-		(hist, _) = np.histogram(lbp.ravel(),
-			bins=np.arange(0, self.numPoints + 3),
-			range=(0, self.numPoints + 2))
+		# it should send in a grayscale image in the describe function
+		#extract Haralick texture features in 4 directions, then take the
+		# mean of each direction
+		# ignore_zeros=True since i have masked the image, and therefore we want to ignore black color == 0 (zeroes)
+		features = mahotas.features.haralick(image, ignore_zeros=True).mean(axis=0)
 
-		# normalize the histogram
-		hist = hist.astype("float")
-		hist /= (hist.sum() + eps)
+		# return the haralick feature
+		return features
 
-		# return the histogram of Local Binary Patterns
-		return hist
-
-class modelTools:
+class modelToolsH:
 
 	def __init__(self, createdModel, imageOcean, imageOther):
 		self.imageOcean =  self.resizeImage(imageOcean)
@@ -120,7 +112,7 @@ class analyseROITools:
 		#self.desc = LocalBinaryPatterns(24, 8)  # numPoints = 24, radius = 8
 
 		#self.desc = LocalBinaryPatterns(10, 5)  # numPoints = 24, radius = 8
-		self.desc = LocalBinaryPatterns(10, 5)
+		self.desc = Haralick()
 
 		#self.data, self.labels = self.get_HistofContoursOfSegments()
 
@@ -203,7 +195,7 @@ class analyseROITools:
 
 		return data, labels
 
-class predictionTool:
+class predictionToolH:
 
 	def __init__(self, image, model, radiusTresh, isObstacleInfront_based_on_radius):
 
@@ -220,7 +212,7 @@ class predictionTool:
 		self.centerCordinates = []
 		#self.desc = LocalBinaryPatterns(24, 8)
 		#self.desc = LocalBinaryPatterns(10, 5)
-		self.desc = LocalBinaryPatterns(10, 5)
+		self.desc = Haralick()
 
 		#self.imageROIList = self.get_ROIofContoursList()
 		#self.mask = np.zeros(self.image.shape[:2], dtype="uint8")
@@ -333,8 +325,14 @@ class predictionTool:
 				if model == None:
 					print "it was none"
 
-				prediction = model.predict(hist)[0]
-				predictionList.append(prediction)
+				# sometimes the input to the sci kit prediction method returns
+				# Input contains NaN, infinity or a value too large for dtype('float64').
+				# but works most of the time, therfore we say that if it has problems predicting, then it should say it is ocean
+				try:
+					prediction = model.predict(hist)[0]
+					predictionList.append(prediction)
+				except:
+					prediction = "ocean"
 
 				# construct a mask for the segment
 				if prediction == "other":
@@ -406,7 +404,7 @@ class predictionTool:
 	def Predict_HistofRoi(self):
 		# initialize the local binary patterns descriptor along with
 		# the data and label lists
-		desc = LocalBinaryPatterns(24, 8)  # numPoints = 24, radius = 8
+		desc = Haralick()  # numPoints = 24, radius = 8
 		predictionList = []
 
 		for imageROI in self.imageROIList:
