@@ -1,5 +1,3 @@
-
-import logging
 import os
 import cv2
 import csv
@@ -11,7 +9,6 @@ import re
 class Images:
 
     def __init__(self, dir_path):
-        #self.logger = logging.getLogger()
         self.imageList = []
         #self.infolist = None
         self.image_width = 100
@@ -21,8 +18,6 @@ class Images:
 
     # from main input argument is (args['dir']) --> dir_path = 'dir'
     def loadFromDirectory(self, dir_path=None, is_infofile=None):
-        #self.logger.info("Searching for images and posAnd_dir.csv in: {}".format(dir_path))
-
         if self.dir_path == None:
             raise Exception("You need to input the directory string where source images are placed on your computer")
         if not os.path.isdir(self.dir_path):
@@ -30,10 +25,10 @@ class Images:
 
         # grab pose data from csv # pose contains: filename,latitude,longitude,altitude,yaw,pitch,roll
         if is_infofile==True: # --> only grab infofile if there is one
-            #self.logger.info("is_infofile was set to True")
+            # is_infofile was set to True
             self.infolist = self.getPoseData(self.dir_path)
             if len(self.infolist) == 0:
-                #self.logger.error("Error reading posAnd_dir.csv")
+                # Error reading posAnd_dir.csv
                 return False
 
         # grab filenames of the images in the specified directory
@@ -41,20 +36,19 @@ class Images:
         self.filenames = self.get_sorted_files2()
 
         if self.filenames == None: # --> if there is no files in directory, then STOP
-            #self.logger.error("Error reading filenames, check if the directory is empty?")
+            # print "Error reading filenames, check if the directory is empty?"
             return False
 
         # ELSE do this
         # load the imagesz
         for i, img_filename in enumerate(self.filenames):
-            #self.logger.info("Opening file: {}".format(img_filename))
             self.imageList.append(cv2.imread(img_filename))
 
         # set attributes of image_width & imageHeight for images (based on image 1),
         # -->  assumes all images are the same size
         (self.image_width, self.imageHeight) = self.getimage_shape(self.imageList[0])
 
-        #self.logger.info("Data loaded successfully.")
+        print "Data loaded successfully."
 
     # Inbar Rose answer in thread http://stackoverflow.com/questions/11953824/how-to-read-filenames-in-a-folder-and-access-them-in-an-alphabetical-and-increas
     def get_sorted_files(self, dir_path):
@@ -71,9 +65,6 @@ class Images:
         alpha, num = basename.split('_')
         #alpha, num = basename[0].split('_')
         return int(num)
-
-    #tiffiles.sort(key=getint)
-
 
     ######## This part sorts the files _123 _1 _4 as _1 _4 _123. It is slow, but it works!!
     # Daniel DiPaolo answer in  http://stackoverflow.com/questions/4623446/how-do-you-sort-files-numerically
