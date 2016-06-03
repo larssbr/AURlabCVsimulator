@@ -36,8 +36,6 @@ def getImg(frame_data, frame):
                      shape=(frame.height,frame.width,frame.pixel_bytes))
     return img
 
-#################################################
-
 # HELPER FUNCTIONS degrees and radians
 def rad2deg(radians):
     # degrees = 180 * radians / pi
@@ -51,7 +49,8 @@ def deg2rad(degrees):
     radians = pi * degrees / 180
     return radians
 
-class RecordImages():
+#################################################
+class RecordImages(object):
     # pairNumber = pairNumber + 1
     def __init__(self, imgLeft, imgRight, img_DISPARITY, img_depthMap, pairNumber, folderName_saveImages, toktName):
         self.imgLeft = imgLeft
@@ -73,7 +72,7 @@ class RecordImages():
         cv2.imwrite(self.imgNameString_DISTANCE, self.img_depthMap)
         cv2.imwrite(self.imgNameString_DISPARITY, self.img_DISPARITY)
 
-class TalkUDP:
+class TalkUDP(object):
     # Comunication methods
 
     def __init__(self, MESSAGE) :#, disparity_visual):
@@ -124,17 +123,11 @@ class TalkUDP:
         print "directionMessage"
         return directionMessage
 
-class DisparityImage:
+class DisparityImage(object):
     # This class calculates the disparity map from a left and right image
     # 1 rectifies images
     # 2 stereo block matching to calculate disparity
     def __init__(self, imgLeft, imgRight):
-        #self.logger = logging.getLogger()
-        #self.imageList = []
-        #self.infolist = None
-        #self.image_width = 100
-        #self.imageHeight = 100
-        #self.filenames = []
         self.intrinsic_matrixL = []
         self.intrinsic_matrixR = []
         self.distCoeffL = []
@@ -223,10 +216,6 @@ class DisparityImage:
 
         # print('Undistort the right images')
         undistorted_image_R = self.UndistortImage(self.imgRight, self.intrinsic_matrixR, self.distCoeffR)
-
-        # cv2.imshow("undistorted_image_L", undistorted_image_L)
-        # cv2.imshow("undistorted_image_R", undistorted_image_R)
-        # cv2.waitKey(0)
 
         # --> calculate disparity images
         disparity_visual = self.getDisparity(imgLeft=undistorted_image_L, imgRight=undistorted_image_R, method="BM")
@@ -355,7 +344,7 @@ class DisparityImage:
 
             return disparity_visual #, self.isObsticleInFrontTreshValue]
 
-class ObstacleAvoidance:
+class ObstacleAvoidance(object):
 
     def __init__(self, disparity_visual, isObsticleInFrontTreshValue, objectAVGCenter, center):
     #def __init__(self, MESSAGE, objectCenter):
@@ -554,34 +543,11 @@ class ObstacleAvoidance:
 def saveImage(image_name_str, image):
     cv2.imwrite(image_name_str, image)
 
-#### tunner gui here #######
-
-# tuning parameters
-##############################
-# trackBarWindowName = 'image'
-# cv2.namedWindow(trackBarWindowName)  # name of window to TUNE
-
-# create trackbars for color change
-# cv2.createTrackbar('R',trackBarWindowName,0,255,nothing)
-# cv2.createTrackbar('G',trackBarWindowName,0,255,nothing)
-# cv2.createTrackbar('B',trackBarWindowName,0,255,nothing)
-# cv2.createTrackbar('radiusTresh', trackBarWindowName, 0, 100, nothing)
-
-# radiusTresh = cv2.getTrackbarPos('radiusTresh', trackBarWindowName)
-
-# create switch for ON/OFF functionality
-# switch = '0 : OFF \n1 : ON'
-# cv2.createTrackbar(switch, trackBarWindowName, 0, 1, nothing)
-
-
-
-
-
 ########
 # MAIN #
 def main():
     # decide wich method you want to run --> 1 = disparity method, 2 = classification method
-    methodDecide = 2
+    methodDecide = 1
     isObstacleInfront_based_on_radius = False
     createdModel = False
     folderName_saveImagesSuper = "superpixelImagesSaved"
@@ -634,7 +600,6 @@ def main():
     object_real_world_mm = 500  # 1000mm = 1 meter to calculate distance to a known object.
 
 
-
     ##################################
     # load superpixel model
     #createdModel = True
@@ -674,9 +639,6 @@ def main():
             disparity_visualBW = cv2.convertScaleAbs(disparity_visual)
 
             ############### display disparity image here       #################
-            #print "disparity_visual.dtype"
-            #print disparity_visual.dtype  # float32
-
             cv2.imshow("disparity_visual", disparity_visual)
             cv2.waitKey(1)
         #######################################################################
@@ -747,7 +709,6 @@ def main():
         except:
             pass
 
-
         ###############################################3
         # 4 send UDP mesaage with obstacle info to control system
         try:
@@ -783,11 +744,6 @@ def main():
             drawClass.saveImage(imgNameString_DISPARITY, drawClass.get_drawnImage())
         except:
             pass
-
-        # image_color_with_Draw = self.imgLeft.copy()
-        # print "drawing over color image"
-        # cv2.imshow("image_color_with_Draw",image_color_with_Draw)
-        # cv2.waitKey(0)
 
         ##############################################################
         # 6 save information in .txt file
