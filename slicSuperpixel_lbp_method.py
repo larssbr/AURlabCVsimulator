@@ -1,33 +1,24 @@
-
 import cv2
+import numpy as np
 # import the necessary packages
 from skimage.segmentation import slic
 from skimage.segmentation import mark_boundaries
 from skimage.util import img_as_float
+from skimage import feature
 
 from skimage.segmentation import felzenszwalb
 
-import cProfile
-
-# to train classifier
-#from localbinarypatterns import LocalBinaryPatterns
-
+# Classifier
 from sklearn.svm import LinearSVC
-from skimage import feature
-import numpy as np
 
-# import the necessary packages
-from imutils import paths
+# profiling the code
+import cProfile
 
 # to save and load, the model that is created from the classification
 from sklearn.externals import joblib
 
-
-# import the necessary packages
-from skimage import feature
-import numpy as np
-
-class LocalBinaryPatterns:
+# Feature extraction
+class LocalBinaryPatterns(object):
 	# this class is from: http://www.pyimagesearch.com/2015/12/07/local-binary-patterns-with-python-opencv/
 	def __init__(self, numPoints, radius):
 		# store the number of points and radius
@@ -52,7 +43,7 @@ class LocalBinaryPatterns:
 		# return the histogram of Local Binary Patterns
 		return hist
 
-class modelTools:
+class modelTools(object):
 
 	def __init__(self, createdModel, imageOcean, imageOther):
 		self.imageOcean =  self.resizeImage(imageOcean)
@@ -103,7 +94,7 @@ class modelTools:
 		resized = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
 		return resized
 
-class analyseROITools:
+class analyseROITools(object):
 
 	def __init__(self, image, labelName):
 
@@ -187,7 +178,7 @@ class analyseROITools:
 
 		return data, labels
 
-class predictionTool:
+class predictionTool(object):
 
 	def __init__(self, image, model, radiusTresh, isObstacleInfront_based_on_radius):
 
@@ -447,10 +438,11 @@ class predictionTool:
 
 		return img, biggestObjectCenter, isObstacleInfront_based_on_radius
 
-
 def main():
-	# This function is here for testing purpuses for just the slicSuperpixel_lbp_method.py script.
-	# So you can run the algorithm on one image, instead of a "stream" of images
+	'''
+	This function is here for testing purpuses for just the slicSuperpixel_lbp_method.py script.
+	So you can run the algorithm on one image, instead of a "stream" of images
+	'''
 
 	#1 ######  Set the parameters
 	createdModel = False
@@ -466,8 +458,8 @@ def main():
 	#3    #### Choce image to predict #####################################
 	# image = cv2.imread("tokt1_R_267.jpg")
 	#image = cv2.imread("transpondertowerIMG/tokt1_L_473.jpg")
-	#image = cv2.imread(r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulationClean\repeatExperiment\Left\tokt1_L_179.jpg")
-	image = cv2.imread(r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulationClean\repeatExperiment\Left\tokt1_L_154.jpg")
+	image = cv2.imread(r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulationClean\repeatExperiment\Left\tokt1_L_179.jpg")
+	#image = cv2.imread(r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulationClean\repeatExperiment\Left\tokt1_L_154.jpg")
 	#image = cv2.imread("transpondertowerIMG/tokt1_L_473.jpg")
 
 	#4   ####  use model to predict a new image #### Predict image ########## test the prediction of the model ################
