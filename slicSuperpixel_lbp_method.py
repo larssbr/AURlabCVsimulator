@@ -370,30 +370,11 @@ class predictionTool(object):
 
 			cv2.putText(image, predictionList[i], CORD, cv2.FONT_HERSHEY_SIMPLEX,
 						1.0, colorFont, 3)
-			merkedImage = mark_boundaries(img_as_float(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)), segments)
+			markedImage = mark_boundaries(img_as_float(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)), segments)
 
-		cv2.imshow("segmented image", merkedImage)
+		cv2.imshow("segmented image", markedImage)
 		cv2.waitKey(1)
 
-	##############################################################################
-
-	def Predict_HistofRoi(self):
-		# initialize the local binary patterns descriptor along with
-		# the data and label lists
-		desc = LocalBinaryPatterns(24, 8)  # numPoints = 24, radius = 8
-		predictionList = []
-
-		for imageROI in self.imageROIList:
-			# 4 pass that into descriptor to obtain feature vector.
-			grayImage = cv2.cvtColor(imageROI, cv2.COLOR_BGR2GRAY)
-			hist = desc.describe(grayImage)
-
-			prediction = self.model.predict(hist)[0]
-			predictionList.append(prediction)
-
-		return predictionList
-
-	#######################################################################################################################
 
 def main():
 	'''
