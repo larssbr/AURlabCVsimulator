@@ -111,11 +111,6 @@ class analyseROITools(object):
 
 		#self.data, self.labels = self.get_HistofContoursOfSegments()
 
-	# not used anymore
-	def get_segments(self):
-		segments = slic(img_as_float(self.image), n_segments=100, sigma=5)
-		return segments
-
 	def get_ROIofContoursList(self, image, segments):
 		# 1. Loop over each superpixel segment and extract its contour.
 		# 2. Compute bounding box of contour.
@@ -183,7 +178,6 @@ class predictionTool(object):
 	def __init__(self, image, model, radiusTresh, isObstacleInfront_based_on_radius):
 
 		self.image = self.resizeImage(image)
-		#self.segments = self.get_segments(image)
 		self.segments = slic(img_as_float(self.image), n_segments=100, sigma=5)
 		#self.segments = felzenszwalb(img_as_float(self.image), scale=3.0, sigma=0.95, min_size=5)
 
@@ -214,10 +208,6 @@ class predictionTool(object):
 		inter = cv2.INTER_AREA
 		resized = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
 		return resized
-
-	def get_segments(self):
-		segments = slic(img_as_float(self.image), n_segments=100, sigma=5)  # was 100
-		return segments
 
 	def get_ROIofContoursList(self):
 		# 1. Loop over each superpixel segment and extract its contour.
