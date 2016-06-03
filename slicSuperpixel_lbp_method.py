@@ -356,7 +356,6 @@ class predictionTool(object):
 
 	def show_maskedImage(self):
 		cv2.imshow('mask', self.maskedImage)
-		#cv2.waitKey(0)
 		cv2.waitKey(1)
 	######################################################################################
 
@@ -394,49 +393,7 @@ class predictionTool(object):
 
 		return predictionList
 
-
 	#######################################################################################################################
-
-	# think i can delete this method
-	def findBiggestObject(img, radiusTresh, isObstacleInfront_based_on_radius):
-		# width, height = img.shape[:2][::-1]
-
-		blurred = cv2.GaussianBlur(img, (11, 11), 0)
-		mask = blurred
-		mask = cv2.erode(mask, None, iterations=2)
-		mask = cv2.dilate(mask, None, iterations=2)
-
-		# find contours in the mask and initialize the current
-		# (x, y) center of the ball
-		cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
-		biggestObjectCenter = None
-
-		# only proceed if at least one contour was found
-		if len(cnts) > 0:
-			# find the largest contour in the mask, then use
-			# it to compute the minimum enclosing circle and
-			# centroid
-			c = max(cnts, key=cv2.contourArea)
-			((x, y), radius) = cv2.minEnclosingCircle(c)
-			print "radius is ##################"
-			print radius
-			M = cv2.moments(c)
-			biggestObjectCenter = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-
-			# only proceed if the radius meets a minimum size
-			if radius > radiusTresh:  # works as a treshold
-				# draw the circle and centroid on the frame,
-				# then update the list of tracked points
-				cv2.circle(img, (int(x), int(y)), int(radius), (255, 255, 255), 2)
-				cv2.circle(img, biggestObjectCenter, 5, (255, 255, 255), -1)
-				# set isObstacleInfront_based_on_radius to True
-				isObstacleInfront_based_on_radius = True
-			else:
-				isObstacleInfront_based_on_radius = False
-
-
-
-		return img, biggestObjectCenter, isObstacleInfront_based_on_radius
 
 def main():
 	'''
