@@ -255,6 +255,9 @@ class predictionTool(object):
 		# This mask has the same width and height a the original image and has a default value of 0 (black).
 		maskedImage = np.zeros(self.image.shape[:2], dtype="uint8")
 
+		test = 1
+		test = self.segments
+		test = 2
 
 		# loop over the unique segment values
 		for (i, segVal) in enumerate(np.unique(self.segments)):
@@ -265,12 +268,6 @@ class predictionTool(object):
 			imageMasked = cv2.bitwise_and(self.image, self.image, mask=mask)
 			grayImage_masked = cv2.cvtColor(imageMasked, cv2.COLOR_BGR2GRAY)
 
-			imageMasked, centerCordinates = self.findCentroid(grayImage_masked)
-
-			centerCordinate = centerCordinates[0] # [(324, 254)]  takes the tupple out of the list --> (324, 254)
-			#print centerCordinate[0]
-			centerList.append(centerCordinate)
-
 			# calling the cv2.findContours on a treshold of the image
 			contours0, hierarchy = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 			#moments = [cv2.moments(cnt) for cnt in contours0]
@@ -278,12 +275,13 @@ class predictionTool(object):
 			# rounded the centroids to integer.
 			#centroids = [(int(round(m['m10'] / m['m00'])), int(round(m['m01'] / m['m00']))) for m in moments]
 
-			#print 'len(contours0)'
-			#print len(contours0)
-
 			for ctr in contours0:
-				# 2 compute bounding box of countour
+				# 1 compute bounding box of countour
 				(x, y, w, h) = cv2.boundingRect(ctr)
+
+				# 2 add the center position of this bounding box in the centerList
+				ctr_center_pos = ((x+w/2) , (y+h/2))
+				centerList.append(ctr_center_pos)
 
 				# 3 extract the rectangular ROI
 				imageROI = self.image[y:y + h, x:x + w].copy()
@@ -312,41 +310,41 @@ class predictionTool(object):
 
 		return imageROIList, centerList, predictionList, maskedImage
 
-	def findCentroid(self, imgBW):
-
-		imgBWCopy = imgBW.astype(np.uint8)
-
-		# contours0, hierarchy = cv2.findContours( imgBW.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-		contours0, hierarchy = cv2.findContours(imgBWCopy, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-
-		centerCordinates = []
-		try:
-			moments = [cv2.moments(cnt) for cnt in contours0]
-			# rounded the centroids to integer.
-			centroids = [(int(round(m['m10'] / m['m00'])), int(round(m['m01'] / m['m00']))) for m in moments]
-			for ctr in centroids:
-				# draw a black little empty circle in the centroid position
-				centerCircle_Color = (0, 0, 0)
-				#cv2.circle(imgBW, tuple(ctr), 4, centerCircle_Color)
-				centerCordinates.append(ctr)
-		except:
-			for ctr in contours0:
-				# draw a black little empty circle in the centroid position
-				centerCircle_Color = (0, 0, 0)
-				#cv2.imshow("imgBw", imgBW)
-				#cv2.waitKey(0)
-				#cv2.circle(imgBW, tuple(ctr), 4, centerCircle_Color)
-				centerCordinates.append(ctr)
-
-
-		return imgBW, centerCordinates
-
 	def get_maskedImage(self):
 		return self.maskedImage
 
 	def show_maskedImage(self):
 		cv2.imshow('mask', self.maskedImage)
 		cv2.waitKey(1)
+
+	# unused method
+		def findCentroid(self, imgBW):
+
+			imgBWCopy = imgBW.astype(np.uint8)
+
+			# contours0, hierarchy = cv2.findContours( imgBW.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+			contours0, hierarchy = cv2.findContours(imgBWCopy, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+
+			centerCordinates = []
+			try:
+				moments = [cv2.moments(cnt) for cnt in contours0]
+				# rounded the centroids to integer.
+				centroids = [(int(round(m['m10'] / m['m00'])), int(round(m['m01'] / m['m00']))) for m in moments]
+				for ctr in centroids:
+					# draw a black little empty circle in the centroid position
+					centerCircle_Color = (0, 0, 0)
+					# cv2.circle(imgBW, tuple(ctr), 4, centerCircle_Color)
+					centerCordinates.append(ctr)
+			except:
+				for ctr in contours0:
+					# draw a black little empty circle in the centroid position
+					centerCircle_Color = (0, 0, 0)
+					# cv2.imshow("imgBw", imgBW)
+					# cv2.waitKey(0)
+					# cv2.circle(imgBW, tuple(ctr), 4, centerCircle_Color)
+					centerCordinates.append(ctr)
+
+			return imgBW, centerCordinates
 
 	######################################################################################
 	# used for visualization of the prediction in the main() method
@@ -361,13 +359,17 @@ class predictionTool(object):
 			else:
 				colorFont = (0, 0, 255) # "Red color for ocean"
 
-			textOrg = CORD
+			#textOrg = CORD
+			#textOrg = tuple(numpy.subtract((10, 10), (4, 4)))
+
 			testOrg = (40,40) # need this for the if statment bellow
 
 			# for some yet unknown reason CORD does sometime contain somthing like this [[[210 209]] [[205 213]] ...]
 			# the following if statemnet is to not get a error becouse of this
-			if len(textOrg) == len(testOrg):
-				cv2.putText(self.image, self.predictionList[i], textOrg, cv2.FONT_HERSHEY_SIMPLEX, 1.0, colorFont, 3)
+			if len(CORD) == len(testOrg):
+				#textOrg = tuple(np.subtract(CORD, (12, 0)))
+				textOrg = CORD
+				cv2.putText(self.image, self.predictionList[i], textOrg, cv2.FONT_HERSHEY_SIMPLEX, 0.1, colorFont, 3)
 				markedImage = mark_boundaries(img_as_float(cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)), self.segments)
 			else:
 				pass
