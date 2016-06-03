@@ -35,7 +35,7 @@ class LocalBinaryPatterns:
 		self.radius = radius
 
 	def describe(self, image, eps=1e-7):
-		# compute the Local Binary Pattern representation
+		# Compute the Local Binary Pattern representation
 		# of the image, and then use the LBP representation
 		# to build the histogram of patterns
 		lbp = feature.local_binary_pattern(image, self.numPoints, self.radius, method= "uniform" ) # method= "ror") #method="var")# method="nri_uniform")  # method="uniform")
@@ -45,7 +45,7 @@ class LocalBinaryPatterns:
 			bins=np.arange(0, self.numPoints + 3),
 			range=(0, self.numPoints + 2))
 
-		# normalize the histogram
+		# Normalize the histogram
 		hist = hist.astype("float")
 		hist /= (hist.sum() + eps)
 
@@ -57,8 +57,6 @@ class modelTools:
 	def __init__(self, createdModel, imageOcean, imageOther):
 		self.imageOcean =  self.resizeImage(imageOcean)
 		self.imageOther =  self.resizeImage(imageOther)
-
-		#createdModel = True
 
 		if createdModel == True:
 			self.model = self.loadModel()
@@ -96,13 +94,12 @@ class modelTools:
 
 	def resizeImage(self, image):
 		(h, w) = image.shape[:2]
-		# width = 1360
-		width = 360
+
+		width = 360  #  This "width" is the width of the resize`ed image
 		# calculate the ratio of the width and construct the
 		# dimensions
 		r = width / float(w)
 		dim = (width, int(h * r))
-		inter = cv2.INTER_AREA
 		resized = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
 		return resized
 
@@ -111,14 +108,13 @@ class analyseROITools:
 	def __init__(self, image, labelName):
 
 		self.image = image
-		#self.segments = self.get_segments(image)
 		self.segments = slic(img_as_float(self.image), n_segments=100, sigma=5)
 		#self.segments = felzenszwalb(img_as_float(self.image), scale=3.0, sigma=0.95, min_size=5)
 
 		self.imageROIList = self.get_ROIofContoursList(image, self.segments)
 		self.labelName = labelName
-		#self.desc = LocalBinaryPatterns(24, 8)  # numPoints = 24, radius = 8
 
+		#self.desc = LocalBinaryPatterns(24, 8)  # numPoints = 24, radius = 8
 		#self.desc = LocalBinaryPatterns(10, 5)  # numPoints = 24, radius = 8
 		self.desc = LocalBinaryPatterns(10, 5)
 
@@ -157,9 +153,9 @@ class analyseROITools:
 			#print 'len(contours0)'
 			#print len(contours0)
 			for ctr in contours0:
-				# 2 compute bounding box of countour
 				# box = cv2.minAreaRect(ctr)
 				# (x, y, w, h) = cv2.minAreaRect(ctr)
+				# 2 compute bounding box of countour
 				(x, y, w, h) = cv2.boundingRect(ctr)
 
 				# 3 extract the rectangular ROI
@@ -180,26 +176,14 @@ class analyseROITools:
 		data = []
 		labels = []
 
-		#imageROIList = extractROIofSegment(image, segments)
-
-		# 4. Pass that into your descriptor to obtain your feature vector.
-		# describeROI()
-
 		for imageROI in self.imageROIList:
-			# cv2.imshow('imageROI', imageROI)
-			# cv2.waitKey(0)
-
 			# 4 pass that into descriptor to obtain feature vector.
-
 			grayImage = cv2.cvtColor(imageROI, cv2.COLOR_BGR2GRAY)
 			hist = desc.describe(grayImage)
 
-			# extract the label from the image path, then update the
-			# label and data lists
-			# labels.append(imageROI.split("/")[-2])
+			# update the label and data lists
 			data.append(hist)
 			labels.append(labelName)
-
 
 		return data, labels
 
@@ -465,29 +449,32 @@ class predictionTool:
 
 
 def main():
-	createdModel = False
-	#createdModel = False
-	isObstacleInfront_based_on_radius = False
+	# This function is here for testing purpuses for just the slicSuperpixel_lbp_method.py script.
+	# So you can run the algorithm on one image, instead of a "stream" of images
 
-	# 1 Get or create model
+	#1 ######  Set the parameters
+	createdModel = False
+	isObstacleInfront_based_on_radius = False
+	radiusTresh = 30
+
+	#2   ###### Get or create model ##################################
 	imageOcean = cv2.imread("tokt1_R_1037.jpg")
 	imageOther = cv2.imread("raptors.png")
 	modelClass = modelTools(createdModel, imageOcean, imageOther)
 	model = modelClass.get_model()
 
-	# 2 use model to predict a new image
-
-	# test the prediction of the model
+	#3    #### Choce image to predict #####################################
 	# image = cv2.imread("tokt1_R_267.jpg")
-	radiusTresh = 30
 	#image = cv2.imread("transpondertowerIMG/tokt1_L_473.jpg")
 	#image = cv2.imread(r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulationClean\repeatExperiment\Left\tokt1_L_179.jpg")
 	image = cv2.imread(r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulationClean\repeatExperiment\Left\tokt1_L_154.jpg")
 	#image = cv2.imread("transpondertowerIMG/tokt1_L_473.jpg")
 
+	#4   ####  use model to predict a new image #### Predict image ########## test the prediction of the model ################
 	predictionClass = predictionTool(image, model, radiusTresh, isObstacleInfront_based_on_radius)
-
 	image = predictionClass.get_maskedImage()
+
+	#5   ### Display image ##############################
 	cv2.imshow("image", image)
 	cv2.waitKey(0)
 
