@@ -470,7 +470,7 @@ def main():
 	# 1 Get or create model
 	imageOcean = cv2.imread("tokt1_R_1037.jpg")
 	imageOther = cv2.imread("raptors.png")
-	modelClass = modelTools(createdModel, imageOcean, imageOther)
+	modelClass = modelToolsH(createdModel, imageOcean, imageOther)
 	model = modelClass.get_model()
 
 	# 2 use model to predict a new image
@@ -483,7 +483,7 @@ def main():
 	image = cv2.imread(r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulationClean\repeatExperiment\Left\tokt1_L_154.jpg")
 	#image = cv2.imread("transpondertowerIMG/tokt1_L_473.jpg")
 
-	predictionClass = predictionTool(image, model, radiusTresh, isObstacleInfront_based_on_radius)
+	predictionClass = predictionToolH(image, model, radiusTresh, isObstacleInfront_based_on_radius)
 
 	image = predictionClass.get_maskedImage()
 	cv2.imshow("image", image)
