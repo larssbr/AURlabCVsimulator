@@ -193,7 +193,7 @@ class predictionTool(object):
 
 		#self.imageROIList = self.get_ROIofContoursList()
 		#self.mask = np.zeros(self.image.shape[:2], dtype="uint8")
-		self.imageROIList, self.centerList, self.predictionList, self.maskedImage = self.extractROIofSegmentandCenterList(self.image, self.segments)
+		self.imageROIList, self.centerList, self.predictionList, self.maskedImage = self.extractROIofSegmentandCenterList()
 
 	# self.data, self.labels = self.get_HistofContoursOfSegments()
 
@@ -205,7 +205,6 @@ class predictionTool(object):
 		# dimensions
 		r = width / float(w)
 		dim = (width, int(h * r))
-		inter = cv2.INTER_AREA
 		resized = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
 		return resized
 
@@ -247,28 +246,29 @@ class predictionTool(object):
 
 		return imageROIList
 
-	def extractROIofSegmentandCenterList(self, image, segments):
+	def extractROIofSegmentandCenterList(self):
 		#desc = LocalBinaryPatterns(24, 8)
 		centerList = []
 		imageROIList =[]
 		predictionList = []
 		# create mask
 		# This mask has the same width and height a the original image and has a default value of 0 (black).
-		maskedImage = np.zeros(image.shape[:2], dtype="uint8")
+		maskedImage = np.zeros(self.image.shape[:2], dtype="uint8")
 
 
 		# loop over the unique segment values
-		for (i, segVal) in enumerate(np.unique(segments)):
+		for (i, segVal) in enumerate(np.unique(self.segments)):
 			# construct a mask for the segment
 			print "[x] inspecting segment %d" % (i)
-			mask = np.zeros(image.shape[:2], dtype="uint8")
-			mask[segments == segVal] = 255
-			imageMasked = cv2.bitwise_and(image, image, mask=mask)
-			grayImage = cv2.cvtColor(imageMasked, cv2.COLOR_BGR2GRAY)
+			mask = np.zeros(self.image.shape[:2], dtype="uint8")
+			mask[self.segments == segVal] = 255
+			imageMasked = cv2.bitwise_and(self.image, self.image, mask=mask)
+			grayImage_masked = cv2.cvtColor(imageMasked, cv2.COLOR_BGR2GRAY)
 
-			imageMasked, centerCordinates = self.findCentroid(grayImage)
+			imageMasked, centerCordinates = self.findCentroid(grayImage_masked)
 
-			centerCordinate = centerCordinates[0]
+			centerCordinate = centerCordinates[0] # [(324, 254)]  takes the tupple out of the list --> (324, 254)
+			#print centerCordinate[0]
 			centerList.append(centerCordinate)
 
 			# calling the cv2.findContours on a treshold of the image
@@ -286,7 +286,7 @@ class predictionTool(object):
 				(x, y, w, h) = cv2.boundingRect(ctr)
 
 				# 3 extract the rectangular ROI
-				imageROI = image[y:y + h, x:x + w].copy()
+				imageROI = self.image[y:y + h, x:x + w].copy()
 
 				# Mask the imageROI here according to prediction
 				# 4 pass that into descriptor to obtain feature vector.
@@ -347,23 +347,39 @@ class predictionTool(object):
 	def show_maskedImage(self):
 		cv2.imshow('mask', self.maskedImage)
 		cv2.waitKey(1)
+
 	######################################################################################
+	# used for visualization of the prediction in the main() method
+	def showPredictionOutput(self):
+		image_withText = self.image.copy()
 
-	def showPredictionOutput(image, segments, predictionList, centerList):
-		# show the output of the prediction
-		for (i, segVal) in enumerate(np.unique(segments)):
-			CORD = centerList[i]
-			if predictionList[i] == "other":
-				colorFont = (255, 0, 0)
+		# show the output of the prediction with text
+		for (i, segVal) in enumerate(np.unique(self.segments)):
+			CORD = self.centerList[i]
+			if self.predictionList[i] == "other":
+				colorFont = (255, 0, 0) # "Blue color for other"
 			else:
-				colorFont = (0, 0, 255)
+				colorFont = (0, 0, 255) # "Red color for ocean"
 
-			cv2.putText(image, predictionList[i], CORD, cv2.FONT_HERSHEY_SIMPLEX,
-						1.0, colorFont, 3)
-			markedImage = mark_boundaries(img_as_float(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)), segments)
+			textOrg = CORD
+			testOrg = (40,40)
+			print "textOrg"
+			print textOrg
+
+
+			print "self.predictionList[i]"
+			print self.predictionList[i]
+
+			# for some yet unknown reason CORD does sometime contain somthing like this [[[210 209]] [[205 213]] ...]
+			# the following if statemnet is to not get a error becouse of this
+			if len(textOrg) == len(testOrg):
+				cv2.putText(self.image, self.predictionList[i], textOrg, cv2.FONT_HERSHEY_SIMPLEX, 1.0, colorFont, 3)
+				markedImage = mark_boundaries(img_as_float(cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)), self.segments)
+			else:
+				pass
 
 		cv2.imshow("segmented image", markedImage)
-		cv2.waitKey(1)
+		cv2.waitKey(0)
 
 
 def main():
@@ -397,6 +413,12 @@ def main():
 	#5   ### Display image ##############################
 	cv2.imshow("image", image)
 	cv2.waitKey(0)
+
+	# 6 ### Display prediction with text ##################
+	predictionClass.showPredictionOutput(
+
+
+	)
 
 if __name__ == '__main__':
     cProfile.run('main()')
