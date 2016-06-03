@@ -362,13 +362,7 @@ class predictionTool(object):
 				colorFont = (0, 0, 255) # "Red color for ocean"
 
 			textOrg = CORD
-			testOrg = (40,40)
-			print "textOrg"
-			print textOrg
-
-
-			print "self.predictionList[i]"
-			print self.predictionList[i]
+			testOrg = (40,40) # need this for the if statment bellow
 
 			# for some yet unknown reason CORD does sometime contain somthing like this [[[210 209]] [[205 213]] ...]
 			# the following if statemnet is to not get a error becouse of this
