@@ -34,7 +34,13 @@ class centroidTools(object):
         # calculate the centers of the small "objects"
         imgBWCopy = self.imgBW.astype(np.uint8)
 
-        contours0, hierarchy = cv2.findContours( imgBWCopy, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+        #contours0, hierarchy = cv2.findContours( imgBWCopy, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+
+        # cv2.CHAIN_APPROX_SIMPLE --> returns not all points of coutours as "cv2.CHAIN_APPROX_NONE" and is therefore faster and takes less memory
+        # cv2.RETR_EXTERNAL --> only returns the external countours --> faster
+        contours0, hierarchy = cv2.findContours(imgBWCopy, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+
         moments = [cv2.moments(cnt) for cnt in contours0]
 
         # rounded the centroids to integer.
