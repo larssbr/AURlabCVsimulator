@@ -9,15 +9,14 @@ import slicSuperpixel_lbp_method
 
 # python -m cProfile -o output_simulation.txt simulation.py
 
-# 2 run this code
+# 2 run this code to print out the cprofiling nicely in terminal
+'''
 import pstats
-p = pstats.Stats("output.txt")
+p = pstats.Stats("output_simulation.txt.txt")
 p.strip_dirs().sort_stats(-1).print_stats()
-
-
-
+'''
 
 # python -m timeit -s 'import sum' 'slicSuperpixel_lbp_method.main()'
 
-
+###################### snakeviz visualization of the runtimes #################################
 # snakeviz output_simulation.txt
