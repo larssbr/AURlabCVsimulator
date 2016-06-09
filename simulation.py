@@ -476,7 +476,7 @@ class ObstacleAvoidance(object):
 # MAIN #
 def main():
     # decide wich method you want to run --> 1 = disparity method, 2 = classification method
-    methodDecide = 1
+    methodDecide = 2
     isObstacleInfront_based_on_radius = False
     createdModel = False # toogle this value if you want to train the classifier
     folderName_saveImagesSuper = "superpixelImagesSaved"
@@ -608,15 +608,7 @@ def main():
         objectAVGCenter = centroidClass.get_objectCenter()
 
         ##### --> get the center of each countour for drawing class later...
-        centerCordinates = centroidClass.get_centerCordinates()
-
-        ####### make image that buffers "old" centerpoints, and calculate center of the biggest centroid -- hopefully that is the biggest object
-       # Todo: delete this method as i know have a better method
-        try:
-            imgStaaker, center, pts_que_center_List, pts_que_radius_List = centroidClass.findBiggestObject(
-                centroidClass.get_imgBWCopy(), pts_que_center, pts_que_radius, radiusTresh=radiusTresh)
-        except:
-            pass
+        #centerCordinates = centroidClass.get_centerCordinates()
 
         # object_real_world_mm = 500 # 1000mm = 1 meter
         # distance_mm = proc.calcDistanceToKnownObject(self.object_real_world_mm, pixelSizeOfObject)
@@ -649,7 +641,9 @@ def main():
 
         ###################### draw stuff on top of disparity map #################################
         try:
+            ####### make image that buffers "old" "objectCenter"
             pts_que_center_List = centroidClass.draw_bufferCenterPosition(pts_que_center)
+            # get the drawn image and draw the bounding box
             drawnImage = centroidClass.drawBoundingBox()
             cv2.imshow("drawnImage", drawnImage)
             cv2.waitKey(1)
