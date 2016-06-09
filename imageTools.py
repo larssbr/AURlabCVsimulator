@@ -17,7 +17,7 @@ class centroidTools(object):
         try:
             # calculate the average center of this disparity
             # calculate the centers of the small "objects"
-            self.objectCenter, self.centerCordinates, self.drawImage, self.contours0 = self.findObjectCenter_and_CentroidsCenterCords()
+            self.objectCenter, self.drawImage, self.contours0 = self.findObjectCenter_and_CentroidsCenterCords()
         except:
             pass
 
@@ -88,18 +88,7 @@ class centroidTools(object):
 
         objectCenter = (objectCenterX, objectCenterY)
 
-        ########################################
-        # Get the centerCodinates for drawing purposes later
-        moments = [cv2.moments(cnt) for cnt in contours0]
-        centroids = [(int(round(m['m10'] / m['m00'])), int(round(m['m01'] / m['m00']))) for m in moments]
-        centerCordinates = []
-        for ctr in centroids:
-            centerCordinates.append(ctr)
-        centerCordinates = np.asarray(centerCordinates)
-        #########################################
-
-
-        return objectCenter, centerCordinates, image, contours0
+        return objectCenter, image, contours0
 
     def drawBoundingBox(self):
         # Make a bounding box with some margin around the obstacle
@@ -131,7 +120,6 @@ class centroidTools(object):
         return self.drawImage
 
     def get_objectCenter(self):
-        #return self.centerCordinates
         return self.objectCenter
 
     def get_centerCordinates(self):
