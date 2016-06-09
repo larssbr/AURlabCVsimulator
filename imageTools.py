@@ -137,9 +137,6 @@ class centroidTools(object):
     def get_centerCordinates(self):
         return self.centerCordinates
 
-    def get_imgBWCopy(self):
-        return self.imgBWCopy
-
     def draw_bufferCenterPosition(self, pts_que_center):
         # method that uses a que to draw a line to
         # shows how the center has moved in the image over time
