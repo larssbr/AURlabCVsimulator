@@ -2,4 +2,5 @@ site_name: AURlabCVsimulator
 pages:
 - Home: index.md
 - About: about.md
+- Theory: findCenterOfObject.md
 theme: readthedocs
