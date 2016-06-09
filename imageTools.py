@@ -75,11 +75,12 @@ class centroidTools(object):
         print objectCenterY
 
         #### For vizualizationg the countours ############
-        cv2.drawContours(image, contours0, -1, (255, 255, 255), 2)
-        print "Found {} contours".format(len(contours0))
+        if (len(contours0) != 0):
+            cv2.drawContours(image, contours0, -1, (255, 255, 255), 2)
+            print "Found {} contours".format(len(contours0))
 
-        # draw the center of the object on the image
-        cv2.circle(image, (objectCenterX, objectCenterY), 10, (255, 255, 255), 2)
+            # draw the center of the object on the image
+            cv2.circle(image, (objectCenterX, objectCenterY), 10, (255, 255, 255), 2)
 
         # show the output image
         #cv2.imshow("All Contours", image)
@@ -87,7 +88,6 @@ class centroidTools(object):
         ###################################
 
         objectCenter = (objectCenterX, objectCenterY)
-
         return objectCenter, image, contours0
 
     def drawBoundingBox(self):
@@ -122,9 +122,6 @@ class centroidTools(object):
     def get_objectCenter(self):
         return self.objectCenter
 
-    def get_centerCordinates(self):
-        return self.centerCordinates
-
     def draw_bufferCenterPosition(self, pts_que_center):
         # method that uses a que to draw a line to
         # shows how the center has moved in the image over time
@@ -139,18 +136,20 @@ class centroidTools(object):
         except:
             pass
 
-        # loop over the set of tracked points
-        for i in xrange(1, len(pts_que_center)):
-            # if either of the tracked points are None, ignore
-            # them
-            if pts_que_center[i - 1] is None or pts_que_center[i] is None:
-                continue
+        if (self.objectCenter != (0, 0)): # don`t draw a buffer line if there is no center object. default is (0,0)
+            # loop over the set of tracked points
+            for i in xrange(1, len(pts_que_center)):
+                # if either of the tracked points are None, ignore
+                # them
+                if pts_que_center[i - 1] is None or pts_que_center[i] is None:
+                    continue
 
-            # otherwise, compute the thickness of the line and
-
-            thickness = int(np.sqrt(15 / float(i + 1)) * 2.5)
-            # draw the connecting lines
-            cv2.line(self.drawImage, pts_que_center[i - 1], pts_que_center[i], (255, 255, 255), thickness)
+                thickness = int(np.sqrt(15 / float(i + 1)) * 2.5)
+                # draw the connecting lines
+                # theese if statements is to avoid unnecacary lines when there is no object
+                if (pts_que_center[i] != (0,0)):
+                    if(pts_que_center[i-1] != (0,0)):
+                        cv2.line(self.drawImage, pts_que_center[i - 1], pts_que_center[i], (255, 255, 255), thickness)
 
         return pts_que_center_List #, pts_que_radius_List
 
