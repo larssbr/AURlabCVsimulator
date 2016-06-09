@@ -15,6 +15,8 @@ images_L&R_avoided obstacle first try
 savedImages
 simulationImages1
 model
+# for documentation
+site
 
 # scripts
 colorMethods.py
