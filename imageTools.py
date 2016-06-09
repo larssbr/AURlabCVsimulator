@@ -5,42 +5,109 @@ class centroidTools(object):
 
     def __init__(self, imgBW, object_real_world_mm):
         # self.MESSAGE = ObstacleAvoidance.getMessage()
-        self.imgBW = self.prepareDisparityImage_for_centroid(imgBW) # BW for black and white
+        #self.imgBW = self.prepareDisparityImage_for_centroid(imgBW) # BW for black and white
+        self.imgBW = imgBW
         self.object_real_world_mm = object_real_world_mm
 
         self.objectCenter = (0,0)
-
         self.focallength_mm = (2222.72426 * 35) / 1360
         self.pxPERmm = 2222.72426 / self.focallength_mm  # pxPERmm = 38.8571428572
         self.pixelSizeOfObject = 50
 
         # calculate the centers of the small "objects"
-        self.imgBWCopy, self.centerCordinates = self.findCentroidsCenterCords()
+        #self.objectCenter = self.findCentroidsCenterCords()
         try:
             # calculate the average center of this disparity
-            self.objectAVGCenter = self.getAverageCentroidPosition()
+            # calculate the centers of the small "objects"
+            self.objectCenter, self.centerCordinates = self.findObjectCenter_and_CentroidsCenterCords()
+
+            #self.objectAVGCenter = self.getAverageCentroidPosition()
         except:
             pass
 
-        #centerCordinates = self.get_centerCordinates()
-
         self.distance_mm = self.calcDistanceToKnownObject()
 
-    def get_imgBWCopy(self):
-        return self.imgBWCopy
-
-
-    def findCentroidsCenterCords(self):
+    def findObjectCenter_and_CentroidsCenterCords(self):
         # calculate the centers of the small "objects"
-        imgBWCopy = self.imgBW.astype(np.uint8)
 
-        #contours0, hierarchy = cv2.findContours( imgBWCopy, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+        # The image need to be monochrome i.e only one channel --> no (r,g,b)
+        # to be able to run findContours
+        imageMono = self.imgBW.astype(np.uint8)
+        print imageMono.dtype
+        #imageMono = cv2.cvtColor(self.imgBW, cv2.cv.CV_BGR2GRAY)
+
+        # prepare image for centroid calculations
+        # This method dilates the points in the black and white image.
+        # This is to connect more of the dots, so we get bigger countours.
+        # DILATE white points...
+        imageMono = cv2.dilate(imageMono, np.ones((5, 5)))
 
         # cv2.CHAIN_APPROX_SIMPLE --> returns not all points of coutours as "cv2.CHAIN_APPROX_NONE" and is therefore faster and takes less memory
         # cv2.RETR_EXTERNAL --> only returns the external countours --> faster
-        contours0, hierarchy = cv2.findContours(imgBWCopy, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        (contours0, _) = cv2.findContours(imageMono, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        clone = imageMono.copy()
+
+        centroid_XList = []
+        centroid_YList = []
+
+        areaTot = 0
+        for (i, cnt) in enumerate(contours0):
+            area = cv2.contourArea(cnt)
+
+            # compute the moments of the contour
+            # use the moments to compute the "center of mass" of each contour
+            m = cv2.moments(cnt)
+            centroid_X = [area * int(round(m['m10'] / m['m00']))]
+            centroid_y = [area * int(round(m['m01'] / m['m00']))]
+
+            centroid_XList.append(centroid_X)
+            centroid_YList.append(centroid_y)
+
+            areaTot = areaTot + area
+
+        centroid_XList = np.asarray(centroid_XList)
+        centroid_YList = np.asarray(centroid_YList)
+
+        # take the average
+        centroid_XListCenters = centroid_XList / areaTot
+        centroid_YListCenters = centroid_YList / areaTot
+
+        # sum the points and cast to int so cv2.draw works
+        objectCenterX = int(np.sum(centroid_XListCenters))
+        objectCenterY = int(np.sum(centroid_YListCenters))
+
+        print objectCenterX
+        print objectCenterY
+
+        #### For vizualizationg the countours ############
+        cv2.drawContours(clone, contours0, -1, (255, 255, 255), 2)
+        print "Found {} contours".format(len(contours0))
+
+        # draw the center of the object on the image
+        cv2.circle(clone, (objectCenterX, objectCenterY), 10, (255, 255, 255), 2)
+
+        # show the output image
+        cv2.imshow("All Contours", clone)
+        cv2.waitKey(1)
+        ###################################
+
+        objectCenter = (objectCenterX, objectCenterY)
+
+        ########################################
+        # Get the centerCodinates for drawing purposes later
+        moments = [cv2.moments(cnt) for cnt in contours0]
+        centroids = [(int(round(m['m10'] / m['m00'])), int(round(m['m01'] / m['m00']))) for m in moments]
+        centerCordinates = []
+        for ctr in centroids:
+            centerCordinates.append(ctr)
+        centerCordinates = np.asarray(centerCordinates)
+        #########################################
 
 
+        return objectCenter, centerCordinates
+
+        '''
         moments = [cv2.moments(cnt) for cnt in contours0]
 
         # rounded the centroids to integer.
@@ -55,49 +122,25 @@ class centroidTools(object):
             cv2.circle(imgBWCopy,ctr,4,centerCircle_Color)
             centerCordinates.append(ctr)
 
-
         centerCordinates = np.asarray(centerCordinates)
 
         return imgBWCopy, centerCordinates   # self.imgBW, self.centerCordinates
+        '''
+
+    def get_objectCenter(self):
+        #return self.centerCordinates
+        return self.objectCenter
 
     def get_centerCordinates(self):
         return self.centerCordinates
 
-    def getAverageCentroidPosition(self):
-        # taking the average of the centroids x and y poition to calculate and estimated  object CENTER
-        # centerCordinates = centerCordinates.astype(np.int)
-        objectCenter = np.average(self.centerCordinates, axis=0)
-        # objectCenter = objectCenter.astype(np.uint8)
-
-        print "objectCenter  : "
-        print objectCenter  # , objectCentery
-        # print objectCentery
-
-        # Unpack tuple.
-        (objectCenterX, objectCenterY) = self.objectCenter
-
-        # Display unpacked variables.
-        print(objectCenterX)
-        print(objectCenterY)
-        # pack the tupple
-        objectCenter = (int(objectCenterX), int(objectCenterY))
-
-        return objectCenter
+    def get_imgBWCopy(self):
+        return self.imgBWCopy
 
     def calcDistanceToKnownObject(self):  #object_real_world_mm):
         object_image_sensor_mm = self.pixelSizeOfObject / self.pxPERmm
-        #distance_mm = (object_real_world_mm * self.focallength_mm) / object_image_sensor_mm
         distance_mm = (self.object_real_world_mm * self.focallength_mm) / object_image_sensor_mm
         return distance_mm
-
-    def prepareDisparityImage_for_centroid(self, IMGbw):
-        # This method dilates the points in the black and white image.
-        # This is to connect more of the dots, so we get bigger countours.
-
-        # DILATE white points...
-        IMGbw = cv2.dilate(IMGbw, np.ones((5, 5)))
-        IMGbw = cv2.dilate(IMGbw, np.ones((5, 5)))
-        return IMGbw
 
     # object avoidance      #################
     def findBiggestObject(self, imgBW, pts_que_center, pts_que_radius, radiusTresh=40):
@@ -109,7 +152,7 @@ class centroidTools(object):
 
         # find contours in the mask and initialize the current
         # (x, y) center of the ball
-        cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+        (cnts, _)= cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
         biggestObjectCenter = None
 
         # only proceed if at least one contour was found
@@ -119,7 +162,11 @@ class centroidTools(object):
             # centroid
             c = max(cnts, key=cv2.contourArea)
             ((x, y), radius) = cv2.minEnclosingCircle(c)
+
+            # calculating the centroid : biggestObjectCenter
             M = cv2.moments(c)
+            # X = int(M["m10"] / M["m00"])
+            # y = int(M["m01"] / M["m00"])
             biggestObjectCenter = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
             # only proceed if the radius meets a minimum size
@@ -193,7 +240,6 @@ class drawTools(object):
         # center = (int(x),int(y))
         radius = int(radius)
         cv2.circle(image, (Xpath, Ypos), radius, (255, 255, 255), 7)
-
         return image
 
     def drawBox(self):
@@ -244,7 +290,6 @@ class drawTools(object):
         try:
             font = cv2.FONT_HERSHEY_SIMPLEX
             cv2.putText(self.image, text, (10, 500), font, 1, (255, 255, 255), 2)
-
         except:
             pass
 
@@ -289,7 +334,6 @@ class drawTools(object):
             pass
 
         ##### fitting a line ###########
-
         try:
             rows, cols = self.image.shape[:2]
             [vx, vy, x, y] = cv2.fitLine(points=centerCordinates, distType=cv2.cv.CV_DIST_L2, param=0, reps=0.01,
@@ -306,3 +350,4 @@ class drawTools(object):
             pixelSizeOfObject = 50
 
         return self.image, pixelSizeOfObject
+
