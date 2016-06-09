@@ -6,7 +6,6 @@ import cProfile
 import math # to get math.pi value
 import socket # to send UDP message to labview pc
 
-import imageTools as proc
 from collections import deque # to keep track of a que of last poitions of the center of an object
 import datetime # to print the time to the textfile
 
@@ -51,7 +50,6 @@ def deg2rad(degrees):
 
 #################################################
 class RecordImages(object):
-    # pairNumber = pairNumber + 1
     def __init__(self, imgLeft, imgRight, img_DISPARITY, img_depthMap, pairNumber, folderName_saveImages, toktName):
         self.imgLeft = imgLeft
         self.imgRight = imgRight
@@ -60,15 +58,12 @@ class RecordImages(object):
         self.imgNameString_DISTANCE = folderName_saveImages + "/" + toktName + "_Depth_map_" + str(pairNumber) + ".jpg"
         self.imgNameString_DISPARITY = folderName_saveImages + "/" + toktName + "_Disp_map_" + str(pairNumber) + ".jpg"
 
-        #self.pairNumber = pairNumber
-        #self.folderName_saveImages = folderName_saveImages
-        #self.toktName = toktName
-
     def saveImages(self):
+        ############## save the images that has been used to create disparity######################
         cv2.imwrite(self.imgNameString_L, self.imgLeft)
         cv2.imwrite(self.imgNameString_R, self.imgRight)
 
-        ############## save the images that has been used to create disparity######################
+        ############## save the disparity that has been created ####################################
         cv2.imwrite(self.imgNameString_DISTANCE, self.img_depthMap)
         cv2.imwrite(self.imgNameString_DISPARITY, self.img_DISPARITY)
 
@@ -83,7 +78,8 @@ class TalkUDP(object):
 
         # addressing information of target
         # TODO: extreact this to GUI level of code
-        UDP_IP = "127.0.0.1"
+        UDP_IP = "127.0.0.1"    # correct IP if only ONE computer is used --> it becomes very slow if it does not find an ip and this is the computers ip
+        #UDP_IP = "192.168.1.73" # CORRECT IP TO THE AUR LAB DELL COMPUTER
         UDP_PORT = 1130
 
         print "message:", self.MESSAGE
@@ -414,7 +410,61 @@ class ObstacleAvoidance(object):
 
         return meanValue[0]  # want to have the 0 array, else the data is represented liek this: (1.3585184021230532, 0.0, 0.0, 0.0)
 
-    ##### todo, dont use this anymore , move or delete it
+    def isObsticleInFront(self):
+        # This method takes the possible "object Image"
+        # And calculates a meanPixelSUM and if this value is over a given
+        # isObsticleInFrontTreshValue then it returns True, else False
+
+        # meanValue = self.meanPixelSUM(img)
+        print "meanValue for disparity image"
+        print self.meanValue
+        # cv2.waitKey(0)
+        # print meanValue
+        # cv2.waitKey(0)
+        # if the meanValue is above a treshold for to "small areas of pixels in the image"
+        # in this case 0.3
+        #if self.meanValue > self.isObsticleInFrontTreshValue:  # 1.7:
+        if self.meanValue < self.isObsticleInFrontTreshValue:  # 1.7: # TODO CHECK THIS SIGN AGAIN
+            return True
+        else:
+            return False
+
+    def createMESSAGE(self):
+        # directionMessage = "status : "
+        # directionMessage = "status : , " # todo : uncoment it later
+
+        directionMessage = "status : "
+        #####
+        # --> tell path program
+        # 0 if there is obstacle in the image
+        # 1 if there is NO obstacle in the image
+        if self.isObsticleInFront():  # if the treshold says there is somthing infront then change directions
+            # directionMessage = obstacleAvoidanceDirection(disparity_visual)
+            # it should change path
+            directionMessage = directionMessage + str(0) + " "
+        else:  # if nothing is in front of camera, do not interupt the path
+            # it can continue on its path
+            directionMessage = directionMessage + str(1) + " "
+
+        print "directionMessage"
+        print directionMessage
+
+        print "Xpos"
+        print self.Xpos
+        # XposMessage = directionMessage + ' Xpos :'+ str(Xpos) +' Ypos :' + str(Ypos)
+        #############
+        # centerPosMessage = 'Xpos : ' + str(self.Xpos) + '  Ypos : ' + str(self.Ypos)
+        # centerPosMessage = ' ,Xpos : ,' + str(self.Xpos) + ',  Ypos : , ' + str(self.Ypos)   # todo : uncoment it later
+
+        centerPosMessage = 'Xpos : ' + str(self.Xpos) + '  Ypos : ' + str(self.Ypos)
+
+        ##### add meanValue here ########
+        meanValueMessage = ' , meanValue : ,' + str(self.meanValue)
+
+        MESSAGE = directionMessage + centerPosMessage  + meanValueMessage
+        return MESSAGE
+
+    ##### Todo, dont use this anymore , move or delete it
     def percentageBlack(self, imgROI):
         width, height = imgROI.shape[:2][::-1]
         totalNumberOfPixels = width * height
@@ -466,56 +516,6 @@ class ObstacleAvoidance(object):
             return "NEED MORE TIME TO DECIDE"
     #####
 
-    def isObsticleInFront(self):
-        # This method takes the possible "object Image"
-        # And calculates a meanPixelSUM and if this value is over a given
-        # isObsticleInFrontTreshValue then it returns True, else False
-
-        #meanValue = self.meanPixelSUM(img)
-        print "meanValue for disparity image"
-        print self.meanValue
-        #cv2.waitKey(0)
-        #print meanValue
-        #cv2.waitKey(0)
-        # if the meanValue is above a treshold for to "small areas of pixels in the image"
-        # in this case 0.3
-        if self.meanValue > self.isObsticleInFrontTreshValue:  # 1.7:
-            return True
-        else:
-            return False
-
-
-    def createMESSAGE(self):
-        #directionMessage = "status : "
-        directionMessage = "status : , "
-        #####
-        # --> tell path program
-        # 0 if there is obstacle in the image
-        # 1 if there is NO obstacle in the image
-        if self.isObsticleInFront():  # if the treshold says there is somthing infront then change directions
-            # directionMessage = obstacleAvoidanceDirection(disparity_visual)
-            # it should change path
-            directionMessage = directionMessage + str(0) + " "
-        else:  # if nothing is in front of camera, do not interupt the path
-            # it can continue on its path
-            directionMessage = directionMessage + str(1) + " "
-
-        print "directionMessage"
-        print directionMessage
-
-        print "Xpos"
-        print self.Xpos
-        # XposMessage = directionMessage + ' Xpos :'+ str(Xpos) +' Ypos :' + str(Ypos)
-        #############
-        #centerPosMessage = 'Xpos : ' + str(self.Xpos) + '  Ypos : ' + str(self.Ypos)
-        centerPosMessage = ' ,Xpos : ,' + str(self.Xpos) + ',  Ypos : , ' + str(self.Ypos)
-
-        ##### add meanValue here ########
-        meanValueMessage = ' , meanValue : ,' + str(self.meanValue)
-
-        MESSAGE = directionMessage + centerPosMessage + meanValueMessage
-        return MESSAGE
-
     def get_MESSAGE(self):
         return self.MESSAGE
 
@@ -547,16 +547,17 @@ def saveImage(image_name_str, image):
 # MAIN #
 def main():
     # decide wich method you want to run --> 1 = disparity method, 2 = classification method
-    methodDecide = 1
+    methodDecide = 2
     isObstacleInfront_based_on_radius = False
-    createdModel = False
+    createdModel = False # toogle this value if you want to train the classifier
     folderName_saveImagesSuper = "superpixelImagesSaved"
     folderName_saveImages = "disparityImagesSaved"
     pairNumberSuper = 0
-    radiusTresh = 50
+    pairNumber = 0
+    radiusTresh = 30
     isObsticleInFrontTreshValue = 0.345 # if the value is above this. then we treat it as it is a object in front of the stereo camera
     ##### New method here that load all the images in a folder and
-    # isObsticleInFrontTreshValue = 1.7 under the sea trials. but i think i changed some code. Now it is working great again with 0.3
+    #isObsticleInFrontTreshValue = 1.7  #under the sea trials. but i think i changed some code. Now it is working great again with 0.3
 
     #dirPath = r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulation\simulationImages1"
 
@@ -599,20 +600,13 @@ def main():
     # Todo: be able to set this value from GUI level
     object_real_world_mm = 500  # 1000mm = 1 meter to calculate distance to a known object.
 
-
-    ##################################
-    # load superpixel model
-    #createdModel = True
-    # toogle this value if you want to train the classifier
-
     # 1 Get or create model
     # Create segmented model
-    imageOcean = cv2.imread("tokt1_R_1037.jpg")
-    imageOther = cv2.imread("raptors.png")
-    modelClass = modelTools(createdModel, imageOcean, imageOther)
-    model = modelClass.get_model()
-
-
+    if methodDecide == 2:
+        imageOcean = cv2.imread("tokt1_R_1037.jpg")
+        imageOther = cv2.imread("raptors.png")
+        modelClass = modelTools(createdModel, imageOcean, imageOther)
+        model = modelClass.get_model()
 
     # create model of the whole image
     #imageOcean = cv2.imread("tokt1_R_1037.jpg")
@@ -635,19 +629,23 @@ def main():
             dispClass = DisparityImage(imgLeft=frame_left, imgRight=frame_right)
             # run the DisparityImage class process
             disparity_visual = dispClass.process()
-
             disparity_visualBW = cv2.convertScaleAbs(disparity_visual)
 
             ############### display disparity image here       #################
             cv2.imshow("disparity_visual", disparity_visual)
             cv2.waitKey(1)
+
+            ## Save the image
+            pairNumber = pairNumber + 1
+            #imageName = "disparityImagesSaved2/disparity_visualBW_"+ str(pairNumber) + ".jpg"
+            #cv2.imwrite(imageName, disparity_visual)
         #######################################################################
 
        # run superpixel method here if somthing
         elif methodDecide == 2:
-            #simplePredictionClass = simplePredictionTool(frame_left, modelSimple)
-            #if simplePredictionClass.get_isObstacleInFront():
-            #print "object in front"
+            # simplePredictionClass = simplePredictionTool(frame_left, modelSimple)
+            # if simplePredictionClass.get_isObstacleInFront():
+            # print "object in front"
 
             # 2 use model to predict a new image
             # test the prediction of the model
@@ -656,14 +654,13 @@ def main():
 
             predictionClass = predictionTool(frame_left, model, radiusTresh, isObstacleInfront_based_on_radius)
 
-
-            #predictionClass.show_maskedImage()
+            # predictionClass.show_maskedImage()
             disparity_visual = predictionClass.get_maskedImage()
             disparity_visualBW = disparity_visual
             print " done running predictions"
             cv2.imshow("disparity_visual", disparity_visual)
             cv2.waitKey(1)
-            #cv2.waitKey(0)
+            # cv2.waitKey(0)
 
             pairNumberSuper = pairNumberSuper + 1
             imgNameString_super = folderName_saveImagesSuper + "/" + toktName + "_super_map_" + str(pairNumberSuper) + ".jpg"
@@ -679,21 +676,23 @@ def main():
         # used to find out of information in the image to use for the obstacle avoidance module
         # create class
         centroidClass = centroidTools(imgBW=disparity_visual, object_real_world_mm=object_real_world_mm)
+       ####### --> get the center of the object
+        objectAVGCenter = centroidClass.get_objectCenter()
 
+        ##### --> get the center of each countour for drawing class later...
         centerCordinates = centroidClass.get_centerCordinates()
 
-        # object_real_world_mm = 500 # 1000mm = 1 meter
-        # distance_mm = proc.calcDistanceToKnownObject(self.object_real_world_mm, pixelSizeOfObject)
-        #distance_mm = centroidClass.calcDistanceToKnownObject(object_real_world_mm)
-
         ####### make image that buffers "old" centerpoints, and calculate center of the biggest centroid -- hopefully that is the biggest object
+       # Todo: delete this method as i know have a better method
         try:
             imgStaaker, center, pts_que_center_List, pts_que_radius_List = centroidClass.findBiggestObject(
                 centroidClass.get_imgBWCopy(), pts_que_center, pts_que_radius, radiusTresh=radiusTresh)
         except:
             pass
-        # get parameter from class
-        objectAVGCenter = centroidClass.getAverageCentroidPosition()
+
+        # object_real_world_mm = 500 # 1000mm = 1 meter
+        # distance_mm = proc.calcDistanceToKnownObject(self.object_real_world_mm, pixelSizeOfObject)
+        # distance_mm = centroidClass.calcDistanceToKnownObject(object_real_world_mm)
 
         ################################################################################
         # 3 Obstacle checking the centroid information
@@ -722,36 +721,26 @@ def main():
 
         ###################### draw stuff on top of disparity map #################################
         try:
-            drawClass = drawTools(disparity_visualBW, centerCordinates, objectAVGCenter)
-
-            drawClass.drawAVGcenter_circle()
-            #drawClass.circle_around_object()
-            #drawClass.drawBox()
-            if methodDecide == 1:
-                drawClass.elipse_around_object()
-            elif methodDecide == 2:
-                #drawClass.drawBox()
-                drawClass.circle_around_object()
-
-            #drawClass.drawTextMessage(str(distance_mm))
-
-            cv2.imshow("drawnImage", drawClass.get_drawnImage())
+            pts_que_center_List = centroidClass.draw_bufferCenterPosition(pts_que_center)
+            drawnImage = centroidClass.drawBoundingBox()
+            cv2.imshow("drawnImage", drawnImage)
             cv2.waitKey(1)
 
             ############## save the disparity with drawings ontop######################
-            pairNumber = pairNumber + 1
             imgNameString_DISPARITY = folderName_saveImages + "/" + toktName + "_Disp_map_" + str(pairNumber) + ".jpg"
-            drawClass.saveImage(imgNameString_DISPARITY, drawClass.get_drawnImage())
+            saveImage(imgNameString_DISPARITY, drawnImage)
+
+            #drawClass.drawTextMessage(str(distance_mm))
         except:
             pass
 
-        ##############################################################
+        ##################################################################################################################
         # 6 save information in .txt file
         print "i"
         print i
 
         # sends them at a choosen intervall to make the timing similar as the real world example
-        #time.sleep(0.35)
+        # time.sleep(0.35)
         ############# writing the path direction to text file for annalysing later ##########
         if (CORD != None):
             path_string = "path direction in pixel values : " + str(CORD)
