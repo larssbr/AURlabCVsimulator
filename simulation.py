@@ -2,7 +2,7 @@ from pymba import *
 import numpy as np
 import cv2
 import time
-import cProfile
+
 import math # to get math.pi value
 import socket # to send UDP message to labview pc
 
@@ -12,28 +12,17 @@ import datetime # to print the time to the textfile
 from importDataset import Images  # Import the functions made in importDataset
 
 from imageTools import centroidTools
-from imageTools import drawTools
 
 # import the classes to do the superpixelMethod
-from slicSuperpixel_lbp_method import LocalBinaryPatterns
 from slicSuperpixel_lbp_method import modelTools
 from slicSuperpixel_lbp_method import predictionTool
 
+# for profiling the code
+import cProfile
 
 from simple_lbp_model import simpleModelTools
 from simple_lbp_model import simpleAnalyseImageTools
 from simple_lbp_model import simplePredictionTool
-
-def nothing(x):
-    pass
-
-### Helper methods ###
-def getImg(frame_data, frame):
-    img = np.ndarray(buffer=frame_data,
-                     dtype=np.uint8,
-                     #shape=(frame.height,frame.width,1))
-                     shape=(frame.height,frame.width,frame.pixel_bytes))
-    return img
 
 # HELPER FUNCTIONS degrees and radians
 def rad2deg(radians):
@@ -97,7 +86,6 @@ class TalkUDP(object):
         except:
             pass
 
-
     def statusObjectInfront(self):
         ################################# UDP #########################################
         # Compare the 3 parts, (Left, Center, Right) with each other to find in what area the object is.
@@ -106,9 +94,8 @@ class TalkUDP(object):
         ####
         directionMessage = "status : "
         #####
-        if self.isObsticleInFront(self.disparity_visual,
-                                  self.isObsticleInFrontTreshValue):  # if the treshold says there is somthing infront then change directions
-            # directionMessage = obstacleAvoidanceDirection(disparity_visual)
+        if self.isObsticleInFront(self.disparity_visual, self.isObsticleInFrontTreshValue):
+            # if the treshold says there is somthing infront then change directions
 
             # directionMessage = "CALC"
             directionMessage = directionMessage + str(0) + " "
@@ -287,6 +274,7 @@ class DisparityImage(object):
         # Imporve disparity image, by using a scale sin(20) to sin(50) --> becouse the camera is tilted 35 or 45 degrees?
         # make an array of values from sin(20) to sin(50)
         # disparity_visual_adjusted = self.camereaAngleAdjuster(disparity_visual)
+
     def camereaAngleAdjuster(self, dispimg):
         # Imporve disparity image, by using a scale sin(20) to sin(50) --> becouse the camera is tilted 35 or 45 degrees?
         # make an array of values from sin(20) to sin(50)
@@ -343,7 +331,6 @@ class DisparityImage(object):
 class ObstacleAvoidance(object):
 
     def __init__(self, disparity_visual, isObsticleInFrontTreshValue, objectAVGCenter, center):
-    #def __init__(self, MESSAGE, objectCenter):
         self.disparity_visual = disparity_visual
         self.isObsticleInFrontTreshValue = isObsticleInFrontTreshValue
         self.objectAVGCenter = objectAVGCenter
@@ -366,8 +353,6 @@ class ObstacleAvoidance(object):
 
         self.meanValue = self.meanPixelSUM(disparity_visual)
         self.MESSAGE = self.createMESSAGE()
-
-        # self.MESSAGE = ObstacleAvoidance.getMessage()
 
     def get_centerPosMessage(self):
         # Send position of dangerous objects. To avoid theese positions.
@@ -439,7 +424,6 @@ class ObstacleAvoidance(object):
         # 0 if there is obstacle in the image
         # 1 if there is NO obstacle in the image
         if self.isObsticleInFront():  # if the treshold says there is somthing infront then change directions
-            # directionMessage = obstacleAvoidanceDirection(disparity_visual)
             # it should change path
             directionMessage = directionMessage + str(0) + " "
         else:  # if nothing is in front of camera, do not interupt the path
@@ -463,58 +447,6 @@ class ObstacleAvoidance(object):
 
         MESSAGE = directionMessage + centerPosMessage  + meanValueMessage
         return MESSAGE
-
-    ##### Todo, dont use this anymore , move or delete it
-    def percentageBlack(self, imgROI):
-        width, height = imgROI.shape[:2][::-1]
-        totalNumberOfPixels = width * height
-        ZeroPixels = totalNumberOfPixels - cv2.countNonZero(imgROI)
-        return ZeroPixels
-    def obstacleAvoidanceDirection(self, img):
-        # this method devides the image into 3 parts and chooses either
-        # Left
-        # Center
-        # Right
-        # It calcullates the meanPixelSUm of each area, and deice if the majority of the
-        # obstacle is in the Left, Center, Right part of the image.
-
-        width, height = img.shape[:2][::-1]
-        margin_sides = 100
-        width_parts = (width - margin_sides) / 3
-        hight_margin = height / 15
-
-        Left_piece = img[0:height, 0:453]
-        Center_piece = img[0:height, 453:906]
-        Right_piece = img[0:height, 906:1360]
-
-        # trying with margins
-        # A predefined frame is subtracted in order to avoid mismatches due to different field of view of the ztwo images.
-        Left_piece = img[hight_margin:height - hight_margin, margin_sides / 3:width_parts]
-        Center_piece = img[hight_margin:height - hight_margin, width_parts:width_parts * 2]
-        Right_piece = img[hight_margin:height - hight_margin, width_parts * 2:width_parts * 3]
-
-        # Which of the areas has the least amount of "obstacles"
-        # Left_piece_INT = percentageBlack(Left_piece)
-        # Center_piece_INT = percentageBlack(Center_piece)
-        # Right_piece_INT = percentageBlack(Right_piece)
-
-        Left_piece_INT = self.meanPixelSUM(Left_piece)
-        Center_piece_INT = self.meanPixelSUM(Center_piece)
-        Right_piece_INT = self.meanPixelSUM(Right_piece)
-
-        print Left_piece_INT
-        print Center_piece_INT
-        print Right_piece_INT
-
-        if Left_piece_INT > Center_piece_INT and Left_piece_INT > Right_piece_INT:
-            return "LEFT"
-        if Center_piece_INT > Left_piece_INT and Center_piece_INT > Right_piece_INT:
-            return "CENTER"
-        if Right_piece_INT > Center_piece_INT and Right_piece_INT > Left_piece_INT:
-            return "RIGHT"
-        else:
-            return "NEED MORE TIME TO DECIDE"
-    #####
 
     def get_MESSAGE(self):
         return self.MESSAGE
@@ -540,14 +472,11 @@ class ObstacleAvoidance(object):
         CORD = (self.Xpath, self.Ypos)
         return CORD
 
-def saveImage(image_name_str, image):
-    cv2.imwrite(image_name_str, image)
-
 ########
 # MAIN #
 def main():
     # decide wich method you want to run --> 1 = disparity method, 2 = classification method
-    methodDecide = 2
+    methodDecide = 1
     isObstacleInfront_based_on_radius = False
     createdModel = False # toogle this value if you want to train the classifier
     folderName_saveImagesSuper = "superpixelImagesSaved"
@@ -660,13 +589,12 @@ def main():
             print " done running predictions"
             cv2.imshow("disparity_visual", disparity_visual)
             cv2.waitKey(1)
-            # cv2.waitKey(0)
+
 
             pairNumberSuper = pairNumberSuper + 1
             imgNameString_super = folderName_saveImagesSuper + "/" + toktName + "_super_map_" + str(pairNumberSuper) + ".jpg"
-            #drawClass.saveImage(imgNameString_DISPARITY, drawClass.get_drawnImage())
+            cv2.imwrite(imgNameString_super, disparity_visual)
 
-            saveImage(imgNameString_super, disparity_visual)
             #else:
             #    print "no object infront"
             #    continue
@@ -728,8 +656,7 @@ def main():
 
             ############## save the disparity with drawings ontop######################
             imgNameString_DISPARITY = folderName_saveImages + "/" + toktName + "_Disp_map_" + str(pairNumber) + ".jpg"
-            saveImage(imgNameString_DISPARITY, drawnImage)
-
+            cv2.imwrite(imgNameString_DISPARITY, drawnImage)
             #drawClass.drawTextMessage(str(distance_mm))
         except:
             pass
