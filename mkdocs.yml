@@ -2,5 +2,6 @@ site_name: AURlabCVsimulator
 pages:
 - Home: index.md
 - About: about.md
-- Theory: findCenterOfObject.md
+- Find center of object: findCenterOfObject.md
+- Create disparity map: Disparity_map.md
 theme: readthedocs
