@@ -21,28 +21,7 @@ from imageTools import centroidTools
 from slicSuperpixel_lbp_method import modelTools
 from slicSuperpixel_lbp_method import predictionTool
 
-# for profiling the code
-import cProfile
-
-from simple_lbp_model import simpleModelTools
-from simple_lbp_model import simpleAnalyseImageTools
-from simple_lbp_model import simplePredictionTool
-
-# HELPER FUNCTIONS degrees and radians
-def rad2deg(radians):
-    # degrees = 180 * radians / pi
-    pi = math.pi
-    degrees = 180 * radians / pi
-    return degrees
-
-def deg2rad(degrees):
-    # radians = pi * degrees / 180
-    pi = math.pi
-    radians = pi * degrees / 180
-    return radians
-
 #################################################
-
 class TalkUDP(object):
     # Comunication methods
 
