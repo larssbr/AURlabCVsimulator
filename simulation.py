@@ -108,8 +108,13 @@ class TalkUDP(object):
 
 class DisparityImage(object):
     # This class calculates the disparity map from a left and right image
-    # 1 rectifies images
-    # 2 stereo block matching to calculate disparity
+    # --- > Run the DisparityImage class process
+    #1 - Load Camera parameters
+    #2 - make image pair gray scale
+    #3 - undistort image pair / rectifies images
+    #4 - stereo block matching to calculate disparity
+    #5 - remmove error margin (from challenging claibration parameters)
+
     def __init__(self, imgLeft, imgRight):
         self.intrinsic_matrixL = []
         self.intrinsic_matrixR = []
@@ -194,38 +199,26 @@ class DisparityImage(object):
 
     def disparityCalc(self):
         ############# CALCULATE Disparity ############################
-        # print('Undistort the left images')
-        undistorted_image_L = self.UndistortImage(self.imgLeft, self.intrinsic_matrixL, self.distCoeffL)
+        # 1 make the images grayscale
+        gray_left = cv2.cvtColor(self.imgLeft, cv2.cv.CV_BGR2GRAY)
+        gray_right = cv2.cvtColor(self.imgRight, cv2.cv.CV_BGR2GRAY)
 
-        # print('Undistort the right images')
-        undistorted_image_R = self.UndistortImage(self.imgRight, self.intrinsic_matrixR, self.distCoeffR)
+        # 2 undistort the image pair
+        undistorted_image_L = cv2.undistort(gray_left, self.intrinsic_matrixL, self.distCoeffL, None)
+        undistorted_image_R = cv2.undistort(gray_right, self.intrinsic_matrixR, self.distCoeffR, None)
 
-        # --> calculate disparity images
+        # 3 --> calculate disparity images
         disparity_visual = self.getDisparity(imgLeft=undistorted_image_L, imgRight=undistorted_image_R, method="BM")
         disparity_visual = disparity_visual.astype(np.uint8)
         return disparity_visual
 
-    def disparityDisctance(self, disparity_visual, focal_length, base_offset):
-        # D:= Distance of point in real world,
-        # b:= base offset, (the distance *between* your cameras)
-        # f:= focal length of camera,
-        # d:= disparity:
-
-        # D = b*f/d
-        Depth_map = (base_offset * focal_length) / disparity_visual
-        return Depth_map
-
-    def UndistortImage(self, image, intrinsic_matrix, distCoeff ):
-        # 1 Undistort the Image
-        undistorted_image = cv2.undistort(image, intrinsic_matrix, distCoeff, None)
-        return undistorted_image
-
     def getDisparity(self, imgLeft, imgRight, method="BM"):
 
-        gray_left = cv2.cvtColor(imgLeft, cv2.cv.CV_BGR2GRAY)
-        gray_right = cv2.cvtColor(imgRight, cv2.cv.CV_BGR2GRAY)
-        print gray_left.shape
-        c, r = gray_left.shape
+        gray_left = cv2.cv.fromarray(imgLeft)
+        gray_right = cv2.cv.fromarray(imgRight)
+
+        print imgLeft.shape
+        c, r = imgLeft.shape
         if method == "BM":
 
             sbm = cv2.cv.CreateStereoBMState()
@@ -242,8 +235,6 @@ class DisparityImage(object):
             sbm.speckleWindowSize = 0
 
 
-            gray_left = cv2.cv.fromarray(gray_left)
-            gray_right = cv2.cv.fromarray(gray_right)
 
             cv2.cv.FindStereoCorrespondenceBM(gray_left, gray_right, disparity, sbm)
             disparity_visual = cv2.cv.CreateMat(c, r, cv2.cv.CV_8U)
@@ -275,31 +266,6 @@ class DisparityImage(object):
         # make an array of values from sin(20) to sin(50)
         # disparity_visual_adjusted = self.camereaAngleAdjuster(disparity_visual)
 
-    def camereaAngleAdjuster(self, dispimg):
-        # Imporve disparity image, by using a scale sin(20) to sin(50) --> becouse the camera is tilted 35 or 45 degrees?
-        # make an array of values from sin(20) to sin(50)
-        width, height = dispimg.shape[:2][::-1]
-
-        steps = height / (50 - 20)
-        # sin(20) = 0.91294525072 (rad) = 0.5 (deg)
-        # sin(50) -0.2623748537 (rad) = 0.76604444311 (deg)
-        startRad = deg2rad(20)
-        stopRad = deg2rad(50)
-
-        divideBy = deg2rad(35)
-        # /sin(35)
-
-        # angleScalarList = np.linspace(np.sin(startRad),np.sin(stopRad), height) # accending order
-
-        angleScalarList = np.linspace(np.sin(stopRad) / np.sin(divideBy), np.sin(startRad) / np.sin(divideBy),
-                                      height)  # decreasing order
-
-        # then multiply that array by the matrix
-        for i, value in enumerate(angleScalarList):
-            dispimg[i, :] = dispimg[i, :] * value
-
-        return dispimg
-
     def process(self):
         # 1 load calibration parameters
         self.loadCameraParameters()
@@ -316,7 +282,7 @@ class DisparityImage(object):
 
             disparity_visual = disparity_visual.astype(np.float32)
 
-            # this part is to remove the error from the calibration
+            # remove the error from the calibration
             width, height = disparity_visual.shape[:2][::-1]
             margin = 200
             # img= img[margin:width-margin , 0 : height]
@@ -326,7 +292,8 @@ class DisparityImage(object):
             x2 = width - margin
             disparity_visual = disparity_visual[y1:y2, x1:x2]
 
-            return disparity_visual #, self.isObsticleInFrontTreshValue]
+            return disparity_visual
+
 
 class ObstacleAvoidance(object):
 
@@ -476,7 +443,7 @@ class ObstacleAvoidance(object):
 # MAIN #
 def main():
     # decide wich method you want to run --> 1 = disparity method, 2 = classification method
-    methodDecide = 2
+    methodDecide = 1
     isObstacleInfront_based_on_radius = False
     createdModel = False # toogle this value if you want to train the classifier
     folderName_saveImagesSuper = "superpixelImagesSaved"
