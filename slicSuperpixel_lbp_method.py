@@ -130,14 +130,8 @@ class analyseROITools(object):
 			thresh = cv2.dilate(thresh, None, iterations=4)
 
 			# calling the cv2.findContours on a treshold of the image
-			contours0, hierarchy = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-			# moments = [cv2.moments(cnt) for cnt in contours0]
+			(contours0, _) = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-			# rounded the centroids to integer.
-			# centroids = [(int(round(m['m10'] / m['m00'])), int(round(m['m01'] / m['m00']))) for m in moments]
-
-			#print 'len(contours0)'
-			#print len(contours0)
 			for ctr in contours0:
 				# box = cv2.minAreaRect(ctr)
 				# (x, y, w, h) = cv2.minAreaRect(ctr)
@@ -322,8 +316,7 @@ class predictionTool(object):
 
 			imgBWCopy = imgBW.astype(np.uint8)
 
-			# contours0, hierarchy = cv2.findContours( imgBW.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-			contours0, hierarchy = cv2.findContours(imgBWCopy, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+			(contours0, _) = cv2.findContours(imgBWCopy, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
 			centerCordinates = []
 			try:
