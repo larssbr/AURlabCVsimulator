@@ -7,4 +7,5 @@ pages:
 - Look at the LBP histogram: PlotLBPsHistogram.md
 - Train the lbp model: TrainModelLbp.md
 - Predict the lbp model:  PredictWithModelLbp.md
+- Look at the Haralick histogram: PlotHaralickHistogram.md
 theme: readthedocs
