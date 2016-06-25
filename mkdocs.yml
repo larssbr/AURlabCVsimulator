@@ -10,4 +10,5 @@ pages:
 - Look at the Haralick histogram: PlotHaralickHistogram.md
 - Train the Haralick model: TrainModelHaralick.md
 - Predict the Haralick model: PredictWithModelHaralick.md
+- Find Center of object detected: findCenterOfObject_disparity.md
 theme: readthedocs
