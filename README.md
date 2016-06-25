@@ -70,7 +70,7 @@ Display countour center and boundingbox of the predicted obstacle
 
 ### Usefull links to understnad parts of the code faster
 
-#### Unifrom Local Binary Pattern (watch this to understand better): 
+Unifrom Local Binary Pattern (watch this to understand better): 
 - https://www.youtube.com/watch?annotation_id=annotation_98709127&feature=iv&src_vid=wpAwdsubl1w&v=v-gkPTvdgYo
 
 ####
