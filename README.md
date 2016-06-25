@@ -16,31 +16,49 @@ This repository is made for testing different computer vision methods by simulat
 
 - sklearn: 0.17
 
+#### Mehtods in AURlabCVsimulator
+
+Stereo camera method:
+- Dipsarity method
+
+Mono camera methods also called the texture based methods:
+
+- LBP ROI method
+- Haralick ROI method
+
+- SLIC Superpixel Locally Binary Pattern method
+- SLIC Superpixel Harlick method
+
+Bellow are some examples:
+
 ### Typical underwater image with an obstacle
 
 Image with an obstacle
+
 ![imageTest](notebooks/LBPs/docsIMG/imageTest.png)
 
-#### Mehtods in AURlabCVsimulator
-
-- LBP ROI method
+### EXAMPLE  OF THE LBP ROI method
 Predicted image with lbp
+
 ![image_prediction_lbp](notebooks/LBPs/docsIMG/image_prediction_lbp.png)
 
 Display maskedImage image
+
 ![maskedImage](notebooks/LBPs/docsIMG/maskedImage.png)
 
 Display countour center and boundingbox of the predicted obstacle
+
 ![drawnImage_boundingBox_maskedImage.png](notebooks/countours/docsIMG/drawnImage_boundingBox_maskedImage.png)
 
-### Mono camera methods also called the texture based methods
+### EXAMPLE  OF THE PREDICTION WITH Haralick ROI method
+
+![image_prediction_lbp](notebooks/Haralick/docsIMG/image_predicted.png)
+
+### EXAMPLE  OF THE PREDICTION WITH SLIC Superpixel Locally Binary Pattern method
 
 
 
-
-- Haralick ROI method
-
-- SLIC SUperpixel Locally Binary Pattern method
+- SLIC Superpixel Locally Binary Pattern method
 - SLIC SUperpixel Harlick method
 
 ### Stereo camera methods
