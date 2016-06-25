@@ -16,6 +16,12 @@ This repository is made for testing different computer vision methods by simulat
 
 - sklearn: 0.17
 
+### Folders of images to run simulations on
+
+- images_L&R_avoided obstacle first try
+- repeatExperiment
+- images close to transponder
+
 #### Mehtods in AURlabCVsimulator
 
 Stereo camera method:
@@ -55,9 +61,7 @@ Display countour center and boundingbox of the predicted obstacle
 ![image_prediction_lbp](notebooks/Haralick/docsIMG/image_predicted.png)
 
 ### EXAMPLE  OF THE PREDICTION WITH SLIC Superpixel Locally Binary Pattern method
-
-- SLIC Superpixel Locally Binary Pattern method
-- SLIC SUperpixel Harlick method
+![LBP_prediction_dots.png](notebooks/LBPs/LBP_prediction_dots.png)
 
 ### Stereo camera methods
 - 
@@ -65,13 +69,9 @@ Display countour center and boundingbox of the predicted obstacle
 ![disparityImageClean](notebooks/disparity/disparityImageClean.jpg)
 
 
-### Folders of images
-
-
-
 ### Usefull links to understnad parts of the code faster
 
-#### Unifrom Local Binary Pattern (watch this to understand better): 
+Unifrom Local Binary Pattern (watch this to understand better): 
 - https://www.youtube.com/watch?annotation_id=annotation_98709127&feature=iv&src_vid=wpAwdsubl1w&v=v-gkPTvdgYo
 
 ####
