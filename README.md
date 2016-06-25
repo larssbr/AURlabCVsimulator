@@ -16,6 +16,12 @@ This repository is made for testing different computer vision methods by simulat
 
 - sklearn: 0.17
 
+### Folders of images to run simulations on
+
+- images_L&R_avoided obstacle first try
+- repeatExperiment
+- images close to transponder
+
 #### Mehtods in AURlabCVsimulator
 
 Stereo camera method:
@@ -61,11 +67,6 @@ Display countour center and boundingbox of the predicted obstacle
 - 
 ### EXAMPLE  OF THE Obstacle avoidance with Dipsarity method
 ![disparityImageClean](notebooks/disparity/disparityImageClean.jpg)
-
-### Folders of images
-
-- images_L&R_avoided obstacle first try
-- repeatExperiment
 
 
 ### Usefull links to understnad parts of the code faster
