@@ -40,32 +40,32 @@ Bellow are some examples:
 
 Image with an obstacle
 
-![imageTest](notebooks/LBPs/docsIMG/imageTest.png)
+![imageTest](notebookIMG/imageTest.png)
 
 ### EXAMPLE  OF THE LBP ROI method
 Predicted image with lbp
 
-![image_prediction_lbp](notebooks/LBPs/docsIMG/image_prediction_lbp.png)
+![image_prediction_lbp](notebookIMG/image_prediction_lbp.png)
 
 Display maskedImage image
 
-![maskedImage](notebooks/LBPs/docsIMG/maskedImage.png)
+![maskedImage](notebookIMG/maskedImage.png)
 
 Display countour center and boundingbox of the predicted obstacle
 
-![drawnImage_boundingBox_maskedImage.png](notebooks/countours/docsIMG/drawnImage_boundingBox_maskedImage.png)
+![drawnImage_boundingBox_maskedImage.png](notebookIMG/drawnImage_boundingBox_maskedImage.png)
 
 ### EXAMPLE  OF THE PREDICTION WITH Haralick ROI method
 
-![image_prediction_lbp](notebooks/Haralick/docsIMG/image_predicted.png)
+![image_prediction_lbp](notebookIMG/image_predicted.png)
 
 ### EXAMPLE  OF THE PREDICTION WITH SLIC Superpixel Locally Binary Pattern method
-![LBP_prediction_dots.png](notebooks/LBPs/LBP_prediction_dots.png)
+![LBP_prediction_dots.png](notebookIMG/LBP_prediction_dots.png)
 
 ### Stereo camera methods
 - 
 ### EXAMPLE  OF THE Obstacle avoidance with Dipsarity method
-![disparityImageClean](notebooks/disparity/disparityImageClean.jpg)
+![disparityImageClean](notebookIMG/disparityImageClean.jpg)
 
 
 ### Usefull links to understnad parts of the code faster
