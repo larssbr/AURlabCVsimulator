@@ -63,10 +63,8 @@ def resizeImage(image):
 imagepathOcean = r"trainingIMG/ocean.jpg"
 imageOcean = cv2.imread(imagepathOcean)
 
-#imagepathOther = r"trainingIMG/forest_texture.jpg"
-#imageOther = cv2.imread(imagepathOther)
 
-imagepathOther = r"trainingIMG/raptors.png"
+imagepathOther = r"trainingIMG/NemoReef.jpg"
 imageOther = cv2.imread(imagepathOther)
 
 # 2 resize the image
@@ -229,3 +227,8 @@ joblib.dump(model, "model/filename_model.pkl")
      'model/filename_model.pkl_03.npy']
 
 
+
+
+```python
+
+```
