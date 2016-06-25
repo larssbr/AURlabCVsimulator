@@ -55,18 +55,17 @@ Display countour center and boundingbox of the predicted obstacle
 ![image_prediction_lbp](notebooks/Haralick/docsIMG/image_predicted.png)
 
 ### EXAMPLE  OF THE PREDICTION WITH SLIC Superpixel Locally Binary Pattern method
-
-- SLIC Superpixel Locally Binary Pattern method
-- SLIC SUperpixel Harlick method
+![LBP_prediction_dots.png](notebooks/LBPs/LBP_prediction_dots.png)
 
 ### Stereo camera methods
 - 
 ### EXAMPLE  OF THE Obstacle avoidance with Dipsarity method
 ![disparityImageClean](notebooks/disparity/disparityImageClean.jpg)
 
-
 ### Folders of images
 
+- images_L&R_avoided obstacle first try
+- repeatExperiment
 
 
 ### Usefull links to understnad parts of the code faster
