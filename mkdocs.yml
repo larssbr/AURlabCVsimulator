@@ -8,4 +8,5 @@ pages:
 - Train the lbp model: TrainModelLbp.md
 - Predict the lbp model:  PredictWithModelLbp.md
 - Look at the Haralick histogram: PlotHaralickHistogram.md
+- Train the Haralick model: TrainModelHaralick.md
 theme: readthedocs
