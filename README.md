@@ -56,13 +56,13 @@ Display countour center and boundingbox of the predicted obstacle
 
 ### EXAMPLE  OF THE PREDICTION WITH SLIC Superpixel Locally Binary Pattern method
 
-
-
 - SLIC Superpixel Locally Binary Pattern method
 - SLIC SUperpixel Harlick method
 
 ### Stereo camera methods
-- Dipsarity method
+- 
+### EXAMPLE  OF THE Obstacle avoidance with Dipsarity method
+![disparityImageClean](notebooks/disparity/disparityImageClean.jpg)
 
 
 ### Folders of images
