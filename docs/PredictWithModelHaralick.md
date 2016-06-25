@@ -192,7 +192,7 @@ cv2.imshow("maskedImage", maskedImage )
 cv2.waitKey(0)
 
 # save the image
-cv2.imwrite("docsIMG/maskedImage.png", maskedImage)
+cv2.imwrite("docsIMG/maskedImage_haralick.png", maskedImage)
 cv2.imwrite("docsIMG/imageTest.png", imageTest)
 ```
 
@@ -204,7 +204,7 @@ cv2.imwrite("docsIMG/imageTest.png", imageTest)
 
 
 The images displayed
-![maskedImage](docsIMG/maskedImage.png)
+![maskedImage](docsIMG/maskedImage_haralick.png)
 
 ![imageTest](docsIMG/imageTest.png)
 
@@ -276,7 +276,7 @@ cv2.imshow("image_predicted", image_predicted)
 cv2.waitKey(0)
 
 # save image
-cv2.imwrite("docsIMG/image_predicted.png", image_predicted)
+cv2.imwrite("docsIMG/image_predicted_haralick.png", image_predicted)
 ```
 
     100
@@ -291,7 +291,7 @@ cv2.imwrite("docsIMG/image_predicted.png", image_predicted)
 
 
 The image displayed
-![image_shit](docsIMG/image_shit.png)
+![image_shit](docsIMG/image_predicted_haralick.png)
 
 
 ```python
