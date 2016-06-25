@@ -4,4 +4,6 @@ pages:
 - About: about.md
 - Find center of object: findCenterOfObject.md
 - Create disparity map: Disparity_map.md
+- Train the lbp model: TrainModelLbp.md
+- Predict the lbp model:  PredictWithModelLbp.md
 theme: readthedocs
