@@ -165,17 +165,20 @@ cv2.rectangle(stacked, (cellSizeXdir*5, cellSizeYdir*5), (cellSizeXdir*6, cellSi
 #lbp = feature.local_binary_pattern(roi, 24, 3, method="uniform")
 #features = mahotas.features.haralick(roi, ignore_zeros=True).mean(axis=0)
 features = mahotas.features.haralick(roi, ignore_zeros=False).mean(axis=0)
+print(features.shape)
 
 
 print len(np.unique(features))
-#ax.hist(features.ravel(), normed=True, bins=25, range=(0, 26))
-#ax.hist(features.ravel(), normed=True, bins=13, range=(0, 14))
-n_bins = features.max() + 1
+n_bins = len(np.unique(features))
+print n_bins
+
+
+# The length or dimensionality of a feature vector 
+# is determined by how many entries in the last there are not the maximum value + 1.
 
 ax.hist(features.ravel(), normed=True, bins=n_bins, range=(0, n_bins))
 #ax.hist(features.ravel(), normed=True, bins=13, range=(0, 14))
 
-ax.set_xlim([0, 13])
 cv2.imshow("{}px x {}px".format(cellSize, cellSize), stacked)
 cv2.waitKey(0)
 # save figure
@@ -187,6 +190,8 @@ plt.show()
 cv2.imwrite("docsIMG/grid_withRoi_haralick_onStructure.png", stacked)
 ```
 
+    (13L,)
+    13
     13
     
 
@@ -230,13 +235,12 @@ cv2.rectangle(stacked, (cellSizeXdir*3, cellSizeYdir*3), (cellSizeXdir*4, cellSi
 features = mahotas.features.haralick(roi, ignore_zeros=False).mean(axis=0)
 
 print len(np.unique(features))
-#ax.hist(features.ravel(), normed=True, bins=25, range=(0, 26))
-n_bins = features.max() + 1
 #ax.hist(features.ravel(), normed=True, bins=13, range=(0, 14))
+n_bins = len(np.unique(features))
 ax.hist(features.ravel(), normed=True, bins=n_bins, range=(0, n_bins))
 
 #ax.set_xlim([0, 26])
-ax.set_xlim([0,13])
+#ax.set_xlim([0,13])
 
 cv2.imshow("{}px x {}px".format(cellSize, cellSize), stacked)
 cv2.waitKey(0)
