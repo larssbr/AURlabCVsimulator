@@ -1,4 +1,6 @@
 # This script runs the LBP method in a simulation
+# To run: type this in your terminal in the correct folder
+# python simulation_lbp.py
 
 # Change the folder you want to run the sequence of images on by changing (Inside the main() method)
 #dirPathLeft = r"repeatExperiment\Left"
@@ -18,15 +20,21 @@ from importDataset import Images  # Import the functions made in importDataset
 from imageTools import centroidTools
 
 # import the classes to do the superpixelMethod
-from slicSuperpixel_lbp_method import modelTools
-from slicSuperpixel_lbp_method import predictionTool
+
+#from slicSuperpixel_lbp_method import modelTools
+#from slicSuperpixel_lbp_method import predictionTool
+
+#from ROI_lbp_method import modelTools
+#from ROI_lbp_method import predictionTool
+
+from ROI_haralick_method import modelTools
+from ROI_haralick_method import predictionTool
 
 #################################################
 class TalkUDP(object):
     # Comunication methods
 
-    def __init__(self, MESSAGE) :#, disparity_visual):
-        #self.MESSAGE = ObstacleAvoidance.getMessage()
+    def __init__(self, MESSAGE) :
         self.MESSAGE = MESSAGE
 
     def sendUDPmessage(self):
@@ -73,12 +81,12 @@ class TalkUDP(object):
 
 class ObstacleAvoidance(object):
 
-    def __init__(self, disparity_visual, isObsticleInFrontTreshValue, objectAVGCenter, center):
+    def __init__(self, disparity_visual, isObsticleInFrontTreshValue, objectAVGCenter):
         self.disparity_visual = disparity_visual
         self.isObsticleInFrontTreshValue = isObsticleInFrontTreshValue
         self.objectAVGCenter = objectAVGCenter
         self.cx, self.cy = self.objectAVGCenter
-        self.center = center
+
 
         # get the dimensions of the image
         self.width, self.height = disparity_visual.shape[:2][::-1]
@@ -158,10 +166,10 @@ class ObstacleAvoidance(object):
             return False
 
     def createMESSAGE(self):
-        # directionMessage = "status : "
-        # directionMessage = "status : , " # todo : uncoment it later
 
-        directionMessage = "status : "
+        directionMessage = "status : , " # todo : uncoment it later
+        #directionMessage = "status : "  # used for the path program
+
         #####
         # --> tell path program
         # 0 if there is obstacle in the image
@@ -178,12 +186,9 @@ class ObstacleAvoidance(object):
 
         print "Xpos"
         print self.Xpos
-        # XposMessage = directionMessage + ' Xpos :'+ str(Xpos) +' Ypos :' + str(Ypos)
         #############
-        # centerPosMessage = 'Xpos : ' + str(self.Xpos) + '  Ypos : ' + str(self.Ypos)
-        # centerPosMessage = ' ,Xpos : ,' + str(self.Xpos) + ',  Ypos : , ' + str(self.Ypos)   # todo : uncoment it later
-
-        centerPosMessage = 'Xpos : ' + str(self.Xpos) + '  Ypos : ' + str(self.Ypos)
+        centerPosMessage = ' ,Xpos : ,' + str(self.Xpos) + ',  Ypos : , ' + str(self.Ypos)   # todo : uncoment it later
+        #centerPosMessage = 'Xpos : ' + str(self.Xpos) + '  Ypos : ' + str(self.Ypos) # used for the path program
 
         ##### add meanValue here ########
         meanValueMessage = ' , meanValue : ,' + str(self.meanValue)
@@ -230,13 +235,11 @@ def main():
     ##### New method here that load all the images in a folder and
     #isObsticleInFrontTreshValue = 1.7  #under the sea trials. but i think i changed some code. Now it is working great again with 0.3
 
-    #dirPath = r"C:\CV_projects\ROV_objectAvoidance_StereoVision\simulation\simulationImages1"
+    dirPathLeft = r"images close to transponder\Left"
+    dirPathRight = r"images close to transponder\Right"
 
-    #dirPathLeft = r"images close to transponder\Left"
-    #dirPathRight = r"images close to transponder\Right"
-
-    dirPathLeft = r"repeatExperiment\Left"
-    dirPathRight = r"repeatExperiment\Right"
+    #dirPathLeft = r"repeatExperiment\Left"
+    #dirPathRight = r"repeatExperiment\Right"
 
     imgsLeft = Images(dirPathLeft)
     imgsRight = Images(dirPathRight)
@@ -267,7 +270,8 @@ def main():
     # 1 Get or create model
     # Create segmented model
     imageOcean = cv2.imread("tokt1_R_1037.jpg")
-    imageOther = cv2.imread("raptors.png")
+    #imageOther = cv2.imread("raptors.png")
+    imageOther = cv2.imread("NemoReef.jpg")
     modelClass = modelTools(createdModel, imageOcean, imageOther)
     model = modelClass.get_model()
 
@@ -283,10 +287,9 @@ def main():
         cv2.imshow("left camera image", frame_left)
         cv2.waitKey(1)
 
-       # run superpixel method here if somthing
+       ############ run superpixel method here ################
         # 2 use model to predict a new image
         print "run predictions"
-
         predictionClass = predictionTool(frame_left, model, radiusTresh, isObstacleInfront_based_on_radius)
 
         disparity_visual = predictionClass.get_maskedImage()
@@ -294,6 +297,7 @@ def main():
         cv2.imshow("disparity_visual", disparity_visual)
         cv2.waitKey(1)
 
+        # save the image
         pairNumberSuper = pairNumberSuper + 1
         imgNameString_super = folderName_saveImagesSuper + "/" + toktName + "_super_map_" + str(pairNumberSuper) + ".jpg"
         cv2.imwrite(imgNameString_super, disparity_visual)
@@ -311,14 +315,13 @@ def main():
         CORD = None
         MESSAGE=None
         try:
-            obstacleClass = ObstacleAvoidance(disparity_visual= disparity_visual, isObsticleInFrontTreshValue= isObsticleInFrontTreshValue, objectAVGCenter= objectAVGCenter, center= center)
+            obstacleClass = ObstacleAvoidance(disparity_visual= disparity_visual, isObsticleInFrontTreshValue= isObsticleInFrontTreshValue, objectAVGCenter= objectAVGCenter)
             CORD = obstacleClass.get_CORD()
 
             MESSAGE = obstacleClass.get_MESSAGE()
             print "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
         except:
             pass
-
         ###############################################3
         # 4 Send UDP mesaage with obstacle info to control system
         try:
@@ -362,6 +365,7 @@ def main():
 
         if (MESSAGE != None):
             MESSAGE_File.write(MESSAGE + '\n')
+            print MESSAGE
 
         # write the time these images have been taken to a file
         dateTime_string = unicode(datetime.datetime.now())
