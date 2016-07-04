@@ -193,7 +193,6 @@ class drawTools(object):
         self.centerCordinates = centerCordinates
         self.objectAVGCenter = objectAVGCenter
 
-
     def drawPath(self, Xpath, Ypos, image):
         radius = 100
         # (x,y) = centerCordinates
