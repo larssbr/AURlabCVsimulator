@@ -134,32 +134,22 @@ class ObstacleAvoidance(object):
         # meanValue = self.meanPixelSUM(img)
         print "meanValue for disparity image"
         print self.meanValue
-        # cv2.waitKey(0)
-        # print meanValue
-        # cv2.waitKey(0)
         # if the meanValue is above a treshold for to "small areas of pixels in the image"
-        # in this case 0.3
-        #if self.meanValue > self.isObsticleInFrontTreshValue:  # 1.7:
-        if self.meanValue < self.isObsticleInFrontTreshValue:  # 1.7:
+        if self.meanValue > self.isObsticleInFrontTreshValue:
             return True
         else:
             return False
 
     def createMESSAGE(self):
-
-        directionMessage = "status : , " # todo : uncoment it later
-        #directionMessage = "status : "  # used for the path program
-
+        directionMessage = "status : , "  # todo : uncoment it later
+        # directionMessage = "status : "
         #####
         # --> tell path program
-        # 0 if there is obstacle in the image
-        # 1 if there is NO obstacle in the image
-        if self.isObsticleInFront():  # if the treshold says there is somthing infront then change directions
-            # it should change path
-            directionMessage = directionMessage + str(0) + " "
-        else:  # if nothing is in front of camera, do not interupt the path
-            # it can continue on its path
-            directionMessage = directionMessage + str(1) + " "
+        # 1 if there is obstacle in the image
+        # 0 if there is NO obstacle in the image
+        # if the treshold says there is something infront then change directions
+        status = int(self.isObsticleInFront())
+        directionMessage = directionMessage + str(status) + " "
 
         print "directionMessage"
         print directionMessage
