@@ -294,15 +294,14 @@ class DisparityImage(object):
 
             return disparity_visual
 
-
 class ObstacleAvoidance(object):
 
-    def __init__(self, disparity_visual, isObsticleInFrontTreshValue, objectAVGCenter, center):
+    def __init__(self, disparity_visual, isObsticleInFrontTreshValue, objectAVGCenter):
         self.disparity_visual = disparity_visual
         self.isObsticleInFrontTreshValue = isObsticleInFrontTreshValue
         self.objectAVGCenter = objectAVGCenter
         self.cx, self.cy = self.objectAVGCenter
-        self.center = center
+        #self.center = center
 
         # get the dimensions of the image
         self.width, self.height = disparity_visual.shape[:2][::-1]
@@ -370,32 +369,22 @@ class ObstacleAvoidance(object):
         # meanValue = self.meanPixelSUM(img)
         print "meanValue for disparity image"
         print self.meanValue
-        # cv2.waitKey(0)
-        # print meanValue
-        # cv2.waitKey(0)
         # if the meanValue is above a treshold for to "small areas of pixels in the image"
-        # in this case 0.3
-        #if self.meanValue > self.isObsticleInFrontTreshValue:  # 1.7:
-        if self.meanValue < self.isObsticleInFrontTreshValue:  # 1.7: # TODO CHECK THIS SIGN AGAIN
+        if self.meanValue > self.isObsticleInFrontTreshValue:
             return True
         else:
             return False
 
     def createMESSAGE(self):
+        directionMessage = "status : , "  # todo : uncoment it later
         # directionMessage = "status : "
-        # directionMessage = "status : , " # todo : uncoment it later
-
-        directionMessage = "status : "
         #####
         # --> tell path program
-        # 0 if there is obstacle in the image
-        # 1 if there is NO obstacle in the image
-        if self.isObsticleInFront():  # if the treshold says there is somthing infront then change directions
-            # it should change path
-            directionMessage = directionMessage + str(0) + " "
-        else:  # if nothing is in front of camera, do not interupt the path
-            # it can continue on its path
-            directionMessage = directionMessage + str(1) + " "
+        # 1 if there is obstacle in the image
+        # 0 if there is NO obstacle in the image
+        # if the treshold says there is something infront then change directions
+        status = int(self.isObsticleInFront())
+        directionMessage = directionMessage + str(status) + " "
 
         print "directionMessage"
         print directionMessage
@@ -586,7 +575,7 @@ def main():
         CORD = None
         MESSAGE=None
         try:
-            obstacleClass = ObstacleAvoidance(disparity_visual= disparity_visual, isObsticleInFrontTreshValue= isObsticleInFrontTreshValue, objectAVGCenter= objectAVGCenter, center= center)
+            obstacleClass = ObstacleAvoidance(disparity_visual= disparity_visual, isObsticleInFrontTreshValue= isObsticleInFrontTreshValue, objectAVGCenter= objectAVGCenter)
             CORD = obstacleClass.get_CORD()
 
             #MESSAGE = obstacleClass.process()
