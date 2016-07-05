@@ -59,26 +59,6 @@ class TalkUDP(object):
         except:
             pass
 
-    def statusObjectInfront(self):
-        ################################# UDP #########################################
-        # Compare the 3 parts, (Left, Center, Right) with each other to find in what area the object is.
-        # returnValue = compare3windows(depthMap, somthing )
-        # Image ROI
-        ####
-        directionMessage = "status : "
-        #####
-        if self.isObsticleInFront(self.disparity_visual, self.isObsticleInFrontTreshValue):
-            # if the treshold says there is somthing infront then change directions
-
-            # directionMessage = "CALC"
-            directionMessage = directionMessage + str(0) + " "
-        else:  # if nothing is in front of camera, do not interupt the path
-            # directionMessage = directionMessage + "CONTINUE"
-            directionMessage = directionMessage + str(1) + " "
-
-        print "directionMessage"
-        return directionMessage
-
 class ObstacleAvoidance(object):
 
     def __init__(self, disparity_visual, isObsticleInFrontTreshValue, objectAVGCenter):
@@ -235,11 +215,11 @@ def main():
     ##### New method here that load all the images in a folder and
     #isObsticleInFrontTreshValue = 1.7  #under the sea trials. but i think i changed some code. Now it is working great again with 0.3
 
-    dirPathLeft = r"images close to transponder\Left"
-    dirPathRight = r"images close to transponder\Right"
+    #dirPathLeft = r"images close to transponder\Left"
+    #dirPathRight = r"images close to transponder\Right"
 
-    #dirPathLeft = r"repeatExperiment\Left"
-    #dirPathRight = r"repeatExperiment\Right"
+    dirPathLeft = r"repeatExperiment\Left"
+    dirPathRight = r"repeatExperiment\Right"
 
     imgsLeft = Images(dirPathLeft)
     imgsRight = Images(dirPathRight)
